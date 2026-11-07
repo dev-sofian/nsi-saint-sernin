@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cours — NSI en ligne</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="logo">NSI en ligne</a>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="cours.html" class="active">Cours</a>
+      <a href="python.html">Python</a>
+      <a href="visio.html">Visio</a>
+    </nav>
+  </header>
+
+  <main class="layout-cours">
+    <aside class="sidebar">
+      <input type="search" id="recherche" placeholder="Rechercher un cours…">
+      <div id="liste-cours">Chargement…</div>
+    </aside>
+    <article id="contenu-cours" class="contenu">
+      <p class="muted">Choisis un cours dans la liste.</p>
+    </article>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="assets/js/cours.js"></script>
+</body>
+</html>

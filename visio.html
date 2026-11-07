@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visio — NSI en ligne</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="logo">NSI en ligne</a>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="cours.html">Cours</a>
+      <a href="python.html">Python</a>
+      <a href="visio.html" class="active">Visio</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <form id="form-salle" class="toolbar">
+      <input type="text" id="pseudo" placeholder="Ton prénom" required>
+      <input type="text" id="salle" placeholder="Nom de la salle (ex : nsi-terminale-b)" required>
+      <button class="btn primary" type="submit">Rejoindre</button>
+      <a id="lien-externe" class="btn" target="_blank" rel="noopener" hidden>Ouvrir dans un nouvel onglet</a>
+    </form>
+    <p class="muted">Partage d'écran, tchat et main levée sont dans la barre d'outils de la visio.</p>
+
+    <div class="visio-layout">
+      <div id="jitsi" class="jitsi"></div>
+      <aside class="mini-python">
+        <a href="python.html" target="_blank" class="btn">🐍 Ouvrir l'éditeur Python à côté</a>
+      </aside>
+    </div>
+  </main>
+
+  <script src="assets/js/visio.js"></script>
+</body>
+</html>

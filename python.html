@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python — NSI en ligne</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="logo">NSI en ligne</a>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="cours.html">Cours</a>
+      <a href="python.html" class="active">Python</a>
+      <a href="visio.html">Visio</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <button id="btn-executer" class="btn primary" disabled>▶ Exécuter</button>
+      <label class="btn">
+        📂 Ouvrir un .py
+        <input type="file" id="fichier" accept=".py,.txt" hidden>
+      </label>
+      <button id="btn-telecharger" class="btn">💾 Télécharger</button>
+      <button id="btn-effacer" class="btn">🧹 Effacer la console</button>
+      <span id="statut" class="muted">Chargement de Python…</span>
+    </div>
+
+    <div class="ide">
+      <div class="editeur-wrap">
+        <textarea id="editeur"># Écris ton code ici
+def carre(n):
+    return n * n
+
+for i in range(5):
+    print(i, "->", carre(i))
+</textarea>
+      </div>
+      <pre id="console" class="console"></pre>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script src="assets/js/python.js"></script>
+</body>
+</html>

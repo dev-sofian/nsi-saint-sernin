@@ -1,0 +1,15 @@
+[
+  {
+    "niveau": "Première",
+    "chapitres": [
+      { "titre": "Types de base et variables", "theme": "Programmation", "fichier": "premiere/01-types-de-base.md" },
+      { "titre": "Listes et parcours", "theme": "Programmation", "fichier": "premiere/02-listes.md" }
+    ]
+  },
+  {
+    "niveau": "Terminale",
+    "chapitres": [
+      { "titre": "La récursivité", "theme": "Programmation", "fichier": "terminale/01-recursivite.md" }
+    ]
+  }
+]
