@@ -7,10 +7,13 @@ Il regroupe : les cours de NSI, une salle de classe virtuelle (visio) avec un é
 
 ---
 
-## État actuel (v0, prototype statique)
+## État actuel (v0.1, prototype statique + comptes)
 
 - Site **100 % statique** (HTML, CSS, JavaScript sans framework ni build), hébergé sur **GitHub Pages**.
-- Aucun backend pour l'instant : pas de comptes, pas de base de données.
+- Comptes et rôles via **Firebase** (Authentication + Firestore), appelé directement depuis le navigateur :
+  élèves en connexion anonyme avec un pseudo, profs et admins via GitHub. Mise en place : `docs/FIREBASE.md`.
+  Tant que `assets/js/firebase-config.js` est vide, le site fonctionne sans comptes.
+- La sécurité (qui est admin, qui est banni…) est appliquée par `firestore.rules`, côté serveur.
 - La visio est un simple salon **Jitsi Meet** (serveur public `meet.jit.si`) intégré dans `visio.html`.
 - L'éditeur Python est **séparé** de la visio (`python.html`) et purement local (pas de partage).
 - L'interface est volontairement basique : elle sera refaite (voir `TODO.md`, section UI).
@@ -25,18 +28,47 @@ nsi-classe/
 ├── cours.html           Liste + lecture des cours en Markdown
 ├── python.html          Éditeur CodeMirror + exécution Python (Pyodide)
 ├── visio.html           Salon Jitsi intégré
+├── connexion.html       Connexion (élève anonyme / prof-admin GitHub), mon compte
+├── firestore.rules      Règles de sécurité Firestore (la vraie sécurité du site)
+├── firebase.json        Config Firebase CLI (publication des règles, émulateurs de test)
 ├── .nojekyll            Empêche GitHub Pages de passer le site dans Jekyll
 ├── assets/
 │   ├── css/style.css    Style commun (thème clair/sombre automatique)
 │   └── js/
+│       ├── firebase-config.js  Config Firebase publique (vide = pas de comptes)
+│       ├── auth.js      Module partagé : connexion, déconnexion, pseudo, rôle (admin/prof/eleve), ban
+│       ├── compte.js    Zone « compte » de la barre du haut + événement "nsi:compte"
+│       ├── connexion.js Page de connexion
 │       ├── cours.js     Charge cours/index.json, recherche, affiche le Markdown (marked)
 │       ├── python.js    Pyodide : stdout/stderr vers la console, input() via prompt, ouvrir/télécharger .py, sauvegarde localStorage
 │       └── visio.js     Crée le salon Jitsi (préfixe "nsi-en-ligne-"), bouton "ouvrir dans un onglet"
-└── cours/
-    ├── index.json       Catalogue : niveaux → chapitres {titre, theme, fichier}
-    ├── premiere/*.md    Cours de Première
-    └── terminale/*.md   Cours de Terminale
+├── cours/
+│   ├── index.json       Catalogue : niveaux → chapitres {titre, theme, fichier}
+│   ├── premiere/*.md    Cours de Première
+│   └── terminale/*.md   Cours de Terminale
+├── docs/FIREBASE.md     Guide de mise en place Firebase (pour les admins)
+└── tests/               Tests des règles Firestore (outil de dev, npm, pas utilisé par le site)
 ```
+
+## Comptes et rôles
+
+| Rôle | Connexion | Comment on l'obtient |
+|---|---|---|
+| Élève | Anonyme + pseudo (Google prévu) | Par défaut |
+| Prof | GitHub | Un admin ajoute son UID dans `profs/` |
+| Admin | GitHub | UID ajouté à la main dans `admins/` (console Firebase uniquement) |
+
+Dans une page, pour connaître la personne connectée :
+
+```js
+import { ecouterCompte } from "./auth.js";
+ecouterCompte((compte) => {
+  // compte = null, ou { uid, pseudo, role: "admin" | "prof" | "eleve", banni, motifBan, anonyme, fournisseur }
+});
+```
+
+Les scripts classiques (non-modules) peuvent écouter l'événement `nsi:compte` envoyé par `compte.js` (`ev.detail` = compte).
+**Le rôle côté navigateur sert uniquement à l'affichage** : toute action protégée doit être vérifiée dans `firestore.rules`, avec un test dans `tests/regles.test.mjs`.
 
 ## Bibliothèques utilisées (chargées par CDN, pas de npm)
 
@@ -45,6 +77,7 @@ nsi-classe/
 | CodeMirror | 5.65.16 (cdnjs) | Éditeur de code Python |
 | Pyodide | 0.26.4 (jsdelivr) | Python en WebAssembly dans le navigateur |
 | marked | dernière (jsdelivr) | Rendu Markdown des cours |
+| Firebase JS SDK | 10.14.1 (gstatic, modules ES) | Comptes (Auth) et base de données (Firestore) |
 | Jitsi Meet External API | `meet.jit.si/external_api.js` | Visio, partage d'écran, tchat |
 
 ## Lancer le site en local
@@ -66,6 +99,14 @@ GitHub → **Settings → Pages → Branch : main / (root)**. Le site est servi 
    ```json
    { "titre": "Mon chapitre", "theme": "Données", "fichier": "premiere/03-mon-chapitre.md" }
    ```
+
+## Tester les règles de sécurité
+
+Il faut Node.js 18+ et Java 11+ (pour l'émulateur Firebase) :
+
+```bash
+cd tests && npm install && npm test
+```
 
 ## Conventions de code
 

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion — NSI en ligne</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="logo">NSI en ligne</a>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="cours.html">Cours</a>
+      <a href="python.html">Python</a>
+      <a href="visio.html">Visio</a>
+    </nav>
+    <div id="zone-compte" class="zone-compte"></div>
+  </header>
+
+  <main class="container etroit">
+    <h1>Connexion</h1>
+
+    <p id="message" class="message" role="status" hidden></p>
+
+    <!-- Comptes pas encore activés -->
+    <section id="vue-non-configure" class="panneau" hidden>
+      <h2>Comptes bientôt disponibles</h2>
+      <p class="muted">La connexion n'est pas encore activée sur ce site. En attendant, les cours, l'éditeur Python et la visio restent accessibles sans compte.</p>
+    </section>
+
+    <p id="vue-chargement" class="muted">Chargement…</p>
+
+    <!-- Personne n'est connecté -->
+    <div id="vue-deconnecte" class="grille-connexion" hidden>
+      <section class="panneau">
+        <h2>Élève</h2>
+        <p class="muted">Choisis juste un prénom ou un pseudo, sans compte ni adresse e-mail.</p>
+        <form id="form-anonyme" class="formulaire">
+          <label for="pseudo-anonyme">Prénom ou pseudo</label>
+          <input type="text" id="pseudo-anonyme" autocomplete="nickname" minlength="2" maxlength="20" required>
+          <button class="btn primary" type="submit">Entrer</button>
+        </form>
+        <p class="petit muted">Ton compte reste lié à ce navigateur. Si tu te déconnectes ou effaces les données du navigateur, tu repars avec un nouveau compte.</p>
+      </section>
+
+      <section class="panneau">
+        <h2>Prof ou administrateur</h2>
+        <p class="muted">Connexion obligatoire avec ton compte GitHub.</p>
+        <button id="btn-github" class="btn primary" type="button">Se connecter avec GitHub</button>
+      </section>
+    </div>
+
+    <!-- Quelqu'un est connecté -->
+    <section id="vue-connecte" class="panneau" hidden>
+      <h2>Mon compte</h2>
+      <dl class="infos">
+        <dt>Pseudo</dt><dd id="info-pseudo"></dd>
+        <dt>Rôle</dt><dd id="info-role"></dd>
+        <dt>Connexion</dt><dd id="info-fournisseur"></dd>
+      </dl>
+
+      <div id="bloc-banni" class="alerte" hidden>
+        <strong>Ton accès aux salons a été bloqué par un administrateur.</strong>
+        <p>Motif : <span id="info-motif"></span></p>
+      </div>
+
+      <form id="form-pseudo" class="formulaire">
+        <label for="nouveau-pseudo">Changer de pseudo</label>
+        <input type="text" id="nouveau-pseudo" minlength="2" maxlength="20" required>
+        <button class="btn" type="submit">Enregistrer</button>
+      </form>
+
+      <details class="details-uid">
+        <summary>Identifiant technique (pour les admins)</summary>
+        <p class="petit muted">Un administrateur peut te demander cet identifiant pour te donner le rôle de prof.</p>
+        <code id="info-uid"></code>
+        <button id="btn-copier-uid" class="btn" type="button">Copier</button>
+      </details>
+
+      <p><button id="btn-deconnexion" class="btn" type="button">Se déconnecter</button></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Projet d'élèves — code source sur GitHub.
+  </footer>
+
+  <script type="module" src="assets/js/compte.js"></script>
+  <script type="module" src="assets/js/connexion.js"></script>
+</body>
+</html>
