@@ -25,6 +25,12 @@ try {
   salleInput.value = new URLSearchParams(location.search).get("salle") || localStorage.getItem("nsi-salle") || "";
 } catch (e) {}
 
+// Si l'élève est connecté, son pseudo de compte remplace le prénom (event envoyé par compte.js)
+document.addEventListener("nsi:compte", (ev) => {
+  const compte = ev.detail;
+  if (compte && compte.pseudo) pseudoInput.value = compte.pseudo;
+});
+
 function chargerScriptJitsi() {
   return new Promise((resolve, reject) => {
     if (window.JitsiMeetExternalAPI) return resolve();

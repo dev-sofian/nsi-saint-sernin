@@ -1,0 +1,132 @@
+rules_version = '2';
+
+// Règles de sécurité Firestore de NSI en ligne.
+// C'est ICI que se fait la vraie sécurité : le code JavaScript du site est public
+// et modifiable par n'importe qui, il ne fait qu'afficher ou cacher des boutons.
+//
+// Collections :
+//   admins/{uid}        administrateurs (créés à la main dans la console Firebase)
+//   profs/{uid}         professeurs (ajoutés par un admin)
+//   bans/{uid}          personnes bannies (gérées par les admins)
+//   utilisateurs/{uid}  profil public minimal : pseudo, fournisseur, date de création
+//   journal/{id}        journal des actions de modération (admins seulement)
+//
+// Tests : voir tests/regles.test.mjs (npm test dans le dossier tests/).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Fonctions utilitaires ----------
+
+    function connecte() {
+      return request.auth != null;
+    }
+
+    function estMoi(uid) {
+      return connecte() && request.auth.uid == uid;
+    }
+
+    function fournisseur() {
+      return request.auth.token.firebase.sign_in_provider;
+    }
+
+    // Admins et profs doivent être connectés avec GitHub : un compte anonyme
+    // ne peut jamais obtenir ces droits, même si son UID était ajouté par erreur.
+    function viaGitHub() {
+      return connecte() && fournisseur() == 'github.com';
+    }
+
+    function chemin(collection, uid) {
+      return /databases/$(database)/documents/$(collection)/$(uid);
+    }
+
+    function estAdmin() {
+      return viaGitHub() && exists(chemin('admins', request.auth.uid));
+    }
+
+    function estProf() {
+      return viaGitHub() && exists(chemin('profs', request.auth.uid));
+    }
+
+    function estBanni() {
+      return connecte() && exists(chemin('bans', request.auth.uid));
+    }
+
+    // 2 à 20 caractères : lettres (accents compris), chiffres, espace, _ . ' -
+    function pseudoValide(p) {
+      return p is string && p.matches("^[A-Za-zÀ-ÖØ-öø-ÿ0-9 _.'-]{2,20}$");
+    }
+
+    function texteCourt(t, max) {
+      return t is string && t.size() <= max;
+    }
+
+    // ---------- Administrateurs ----------
+    // Modifiable uniquement depuis la console Firebase (jamais depuis le site).
+    match /admins/{uid} {
+      allow read: if estMoi(uid) || estAdmin();
+      allow write: if false;
+    }
+
+    // ---------- Professeurs ----------
+    match /profs/{uid} {
+      allow read: if estMoi(uid) || estAdmin();
+      allow create, update: if estAdmin()
+        && request.resource.data.keys().hasOnly(['nom', 'ajoutePar', 'date'])
+        && texteCourt(request.resource.data.nom, 40)
+        && request.resource.data.ajoutePar == request.auth.uid
+        && request.resource.data.date == request.time;
+      allow delete: if estAdmin();
+    }
+
+    // ---------- Bannissements ----------
+    match /bans/{uid} {
+      // La personne bannie peut lire son propre ban (pour afficher le motif).
+      allow read: if estMoi(uid) || estAdmin();
+      allow create, update: if estAdmin()
+        && uid != request.auth.uid                     // un admin ne peut pas se bannir lui-même
+        && !exists(chemin('admins', uid))            // ni bannir un autre admin
+        && request.resource.data.keys().hasOnly(['pseudo', 'motif', 'auteurUid', 'date'])
+        && texteCourt(request.resource.data.pseudo, 40)
+        && texteCourt(request.resource.data.motif, 300)
+        && request.resource.data.auteurUid == request.auth.uid
+        && request.resource.data.date == request.time;
+      allow delete: if estAdmin();
+    }
+
+    // ---------- Profils ----------
+    match /utilisateurs/{uid} {
+      // Lisible par les personnes connectées et non bannies (pour afficher les pseudos).
+      allow read: if connecte() && (!estBanni() || estMoi(uid));
+
+      allow create: if estMoi(uid) && !estBanni()
+        && request.resource.data.keys().hasOnly(['pseudo', 'fournisseur', 'cree'])
+        && pseudoValide(request.resource.data.pseudo)
+        && request.resource.data.fournisseur == fournisseur()
+        && request.resource.data.cree == request.time;
+
+      // Seul le pseudo peut changer.
+      allow update: if estMoi(uid) && !estBanni()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pseudo'])
+        && pseudoValide(request.resource.data.pseudo);
+
+      allow delete: if estMoi(uid) || estAdmin();
+    }
+
+    // ---------- Journal de modération ----------
+    // Personne ne peut modifier ou effacer une entrée, pas même un admin.
+    match /journal/{id} {
+      allow read: if estAdmin();
+      allow create: if estAdmin()
+        && request.resource.data.keys().hasOnly(['action', 'cibleUid', 'details', 'auteurUid', 'date'])
+        && request.resource.data.action in ['ban', 'deban', 'ajout_prof', 'retrait_prof', 'kick']
+        && request.resource.data.cibleUid is string
+        && texteCourt(request.resource.data.details, 300)
+        && request.resource.data.auteurUid == request.auth.uid
+        && request.resource.data.date == request.time;
+      allow update, delete: if false;
+    }
+
+    // Tout le reste est interdit par défaut.
+  }
+}

@@ -21,6 +21,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -57,6 +58,46 @@ a { color: var(--accent); }
 
 .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 16px; flex: 1; }
 .muted { color: var(--muted); }
+
+/* Compte (à droite de la barre du haut) */
+.zone-compte { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.compte-nom { font-weight: 600; color: var(--text); text-decoration: none; }
+.compte-nom:hover { text-decoration: underline; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: .8rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.badge-admin { border-color: var(--accent); color: var(--accent); }
+.badge-prof { border-color: #2f9e44; color: #2f9e44; }
+.badge-banni { border-color: #e03131; color: #e03131; }
+
+/* Page de connexion */
+.etroit { max-width: 860px; }
+.grille-connexion { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.panneau {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.panneau h2 { margin-top: 0; }
+.formulaire { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.formulaire label { width: 100%; font-weight: 600; }
+.formulaire input { flex: 1; min-width: 160px; }
+.petit { font-size: .85rem; }
+.message { padding: 10px 14px; border-radius: 8px; border: 1px solid var(--accent); }
+.message.erreur { border-color: #e03131; color: #e03131; }
+.alerte { padding: 12px 14px; border: 1px solid #e03131; border-radius: 8px; margin: 12px 0; }
+.alerte p { margin: 6px 0 0; }
+.infos { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+.infos dt { color: var(--muted); }
+.infos dd { margin: 0; overflow-wrap: anywhere; }
+.details-uid { margin: 12px 0; }
+.details-uid code { display: inline-block; margin-right: 8px; overflow-wrap: anywhere; }
 
 /* Accueil */
 .hero { text-align: center; padding: 40px 0 24px; }
