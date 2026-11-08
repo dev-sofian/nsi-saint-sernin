@@ -1,13 +1,26 @@
-// Salle de classe : visio Jitsi Meet (serveur public meet.jit.si) + Python partagé
-// dans une fenêtre flottante. Visio, partage d'écran, tchat et main levée sont fournis par Jitsi.
+// Salle de classe : visio Jitsi Meet + Python partagé dans une fenêtre flottante.
+// Visio, partage d'écran, tchat et main levée sont fournis par Jitsi.
+//
+// Serveur de visio (visio-config.js) :
+//   - notre Jitsi : on demande d'abord un jeton au service de jetons du serveur
+//     (POST https://<serveur>/jeton avec le jeton Firebase), puis on entre avec ce jeton ;
+//   - sinon meet.jit.si (public, coupé au bout de 5 minutes quand il est intégré).
 
-import { ecouterCompte, firebaseConfigure } from "./auth.js";
+import { ecouterCompte, firebaseConfigure, jetonFirebase } from "./auth.js";
+import { SERVEUR_VISIO } from "./visio-config.js";
 import { Salle } from "./salle.js";
 import { PythonPartage, rafraichirEditeur } from "./python-partage.js";
 import { creerFenetre } from "./fenetre.js";
 
-const DOMAINE = "meet.jit.si";
-const PREFIXE = "nsi-st-sernin-"; // évite de tomber dans la salle d'inconnus
+const NOTRE_SERVEUR = Boolean(SERVEUR_VISIO) && firebaseConfigure;
+const DOMAINE = NOTRE_SERVEUR ? SERVEUR_VISIO : "meet.jit.si";
+const PREFIXE = NOTRE_SERVEUR ? "" : "nsi-st-sernin-"; // sur meet.jit.si : évite les salles d'inconnus
+
+const ERREURS_JETON = {
+  banni: "Ton accès aux salles a été bloqué par un administrateur.",
+  "acces-refuse": "Accès à cette salle refusé.",
+  "jeton-expire": "Ta session a expiré : recharge la page.",
+};
 
 const $ = (id) => document.getElementById(id);
 const form = $("form-salle");
@@ -20,6 +33,7 @@ let api = null;      // visio Jitsi
 let salle = null;    // Salle (Realtime Database)
 let python = null;   // PythonPartage
 let pythonEtaitActif = null;
+let tentative = 0;   // change à chaque entrée/sortie : une entrée abandonnée ne démarre pas la visio
 
 const fenetre = creerFenetre($("fenetre-python"), {
   cle: "python",
@@ -76,21 +90,38 @@ function chargerScriptJitsi() {
   });
 }
 
-async function demarrerVisio(nomJitsi, pseudo) {
+function messageZone(texte) {
+  zone.replaceChildren();
+  const p = document.createElement("p");
+  p.className = "muted";
+  p.style.padding = "16px";
+  p.textContent = texte;
+  zone.append(p);
+}
+
+// Demande au service de jetons de notre serveur l'autorisation d'entrer dans la salle.
+async function demanderJeton(nom) {
+  const rep = await fetch(`https://${DOMAINE}/jeton`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${await jetonFirebase()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ salle: nom }),
+  });
+  const donnees = await rep.json().catch(() => ({}));
+  if (!rep.ok || !donnees.jeton) throw new Error(donnees.erreur || `http-${rep.status}`);
+  return donnees.jeton;
+}
+
+async function demarrerVisio(nomJitsi, pseudo, jwt) {
   try {
     await chargerScriptJitsi();
   } catch (e) {
-    zone.replaceChildren();
-    const p = document.createElement("p");
-    p.className = "muted";
-    p.style.padding = "16px";
-    p.textContent = "Impossible de charger la visio. Utilise le bouton « Visio dans un onglet ».";
-    zone.append(p);
+    messageZone("Impossible de charger la visio. Utilise le bouton « Visio dans un onglet ».");
     return;
   }
   zone.replaceChildren();
   api = new JitsiMeetExternalAPI(DOMAINE, {
     roomName: nomJitsi,
+    jwt,
     parentNode: zone,
     width: "100%",
     height: "100%",
@@ -98,6 +129,7 @@ async function demarrerVisio(nomJitsi, pseudo) {
     userInfo: { displayName: pseudo },
     configOverwrite: {
       prejoinPageEnabled: false,
+      prejoinConfig: { enabled: false },
       startWithAudioMuted: true,
       startWithVideoMuted: true,
     },
@@ -127,16 +159,18 @@ form.addEventListener("submit", async (ev) => {
   } catch (e) {}
 
   await quitter();
+  const maTentative = ++tentative;
   const nomJitsi = PREFIXE + nom;
   $("lien-externe").href = `https://${DOMAINE}/${nomJitsi}#userInfo.displayName=${encodeURIComponent(JSON.stringify(pseudo))}`;
+  $("lien-externe").hidden = NOTRE_SERVEUR; // remis plus bas une fois le jeton obtenu
   $("nom-salle").textContent = nom;
   form.hidden = true;
   $("barre-salle").hidden = false;
   message("");
+  messageZone("Connexion à la visio…");
 
-  demarrerVisio(nomJitsi, pseudo);
-
-  // Python partagé (seulement avec les comptes activés)
+  // Python partagé (seulement avec les comptes activés). On rejoint la salle AVANT de
+  // demander le jeton de visio : le premier arrivé devient hôte, donc modérateur.
   $("btn-python").hidden = !compte;
   if (compte) {
     try {
@@ -153,6 +187,23 @@ form.addEventListener("submit", async (ev) => {
       $("btn-python").hidden = true;
     }
   }
+
+  let jwt;
+  if (NOTRE_SERVEUR) {
+    try {
+      jwt = await demanderJeton(nom);
+      if (maTentative !== tentative) return; // on a quitté la salle entre-temps
+      const lien = $("lien-externe");
+      lien.href = `https://${DOMAINE}/${encodeURIComponent(nomJitsi)}?jwt=${encodeURIComponent(jwt)}`;
+      lien.hidden = false;
+    } catch (e) {
+      console.error("Jeton de visio refusé", e);
+      if (maTentative !== tentative) return;
+      messageZone(ERREURS_JETON[e.message] || "Le serveur de visio ne répond pas. Réessaie dans un instant.");
+      return;
+    }
+  }
+  if (maTentative === tentative) demarrerVisio(nomJitsi, pseudo, jwt);
 });
 
 function majBarre() {
@@ -192,6 +243,7 @@ $("btn-module-python").addEventListener("click", async (ev) => {
 $("btn-quitter").addEventListener("click", quitter);
 
 async function quitter() {
+  tentative++;
   if (api) {
     api.removeListener("readyToClose", quitter);
     api.dispose();

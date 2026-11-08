@@ -1,0 +1,15 @@
+# Caddy : HTTPS automatique (Let's Encrypt) pour le domaine du serveur.
+# DOMAINE est défini dans .env (ex : nsi-st-sernin.duckdns.org).
+{$DOMAINE} {
+	encode gzip
+
+	# Service de jetons (serveur/jeton/serveur.mjs)
+	handle /jeton* {
+		reverse_proxy jeton:8080
+	}
+
+	# Tout le reste : Jitsi Meet (HTTP interne, port 80)
+	handle {
+		reverse_proxy web:80
+	}
+}

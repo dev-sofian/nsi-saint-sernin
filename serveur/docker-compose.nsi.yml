@@ -1,0 +1,47 @@
+# Ajouts de NSI St Sernin au docker-compose.yml officiel de Jitsi (docker-jitsi-meet).
+# Lancé par installer.sh :  docker compose -f docker-compose.yml -f docker-compose.nsi.yml up -d
+#
+#   caddy  : seul service exposé sur Internet (ports 80 et 443). Obtient et renouvelle tout
+#            seul le certificat HTTPS (Let's Encrypt), puis redirige :
+#              /jeton…  -> service de jetons
+#              le reste -> Jitsi (web)
+#   jeton  : service de jetons (serveur/jeton/serveur.mjs), vérifie le compte Firebase.
+#   (jvb, le pont vidéo, reste exposé directement en UDP 10000 par docker-compose.yml.)
+
+services:
+    caddy:
+        image: caddy:2
+        restart: unless-stopped
+        ports:
+            - '80:80'
+            - '443:443'
+            - '443:443/udp'
+        environment:
+            - DOMAINE
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            - ${CONFIG}/caddy/data:/data
+            - ${CONFIG}/caddy/config:/config
+        depends_on:
+            - web
+            - jeton
+        networks:
+            meet.jitsi:
+
+    jeton:
+        image: node:22-alpine
+        restart: unless-stopped
+        read_only: true
+        user: node
+        command: ["node", "/app/serveur.mjs"]
+        environment:
+            - PORT=8080
+            - FIREBASE_PROJET
+            - FIREBASE_DATABASE_URL
+            - ORIGINES_AUTORISEES
+            - JWT_APP_ID
+            - JWT_APP_SECRET
+        volumes:
+            - ./jeton:/app:ro
+        networks:
+            meet.jitsi:

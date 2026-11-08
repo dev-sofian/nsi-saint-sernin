@@ -1,10 +1,11 @@
 {
   "name": "nsi-st-sernin-tests",
   "private": true,
-  "description": "Tests des règles de la Realtime Database (outil de développement, pas utilisé par le site)",
+  "description": "Tests des règles de sécurité et du service de jetons (outil de développement, pas utilisé par le site)",
   "type": "module",
   "scripts": {
-    "test": "firebase emulators:exec --only database --project demo-nsi --config ../firebase.json \"node --test regles.test.mjs\""
+    "test": "node --test jeton.test.mjs && firebase emulators:exec --only database --project demo-nsi --config ../firebase.json \"node --test regles.test.mjs\"",
+    "test:jeton": "node --test jeton.test.mjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.4",

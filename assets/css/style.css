@@ -271,6 +271,7 @@ body.fenetre-glisse { user-select: none; }
   animation: estomper .4s 2.5s forwards; /* l'étiquette s'efface pour ne pas cacher le code */
 }
 @keyframes estomper { to { opacity: 0; } }
+.curseur-ligne1 .curseur-nom { top: 1.25em; }
 
 @media (max-width: 800px) {
   /* Sur téléphone, la fenêtre Python occupe le bas de l'écran et ne se déplace pas */

@@ -15,7 +15,9 @@ Il regroupe : les cours de NSI, une salle de classe virtuelle (visio) avec un é
   Mise en place : `docs/FIREBASE.md`. Si `assets/js/firebase-config.js` est incomplet, le site fonctionne sans comptes.
 - La sécurité (qui est admin, qui est banni, qui peut modifier le code…) est appliquée par
   `database.rules.json`, côté serveur.
-- La visio est un salon **Jitsi Meet** (serveur public `meet.jit.si`) intégré dans `visio.html`, réservé aux personnes connectées.
+- La visio est un salon **Jitsi Meet** intégré dans `visio.html`, réservé aux personnes connectées :
+  sur **notre propre serveur Jitsi** (Oracle Cloud gratuit, dossier `serveur/`, guide `docs/JITSI.md`) une fois
+  `assets/js/visio-config.js` rempli, sinon sur `meet.jit.si` (coupé au bout de 5 minutes).
 - Dans la visio, un **Python partagé en temps réel** s'ouvre dans une **fenêtre flottante** déplaçable :
   l'hôte l'active pour tous, choisit qui peut modifier/exécuter, et tout le monde voit le code,
   les curseurs et la sortie en direct.
@@ -45,7 +47,8 @@ nsi-saint-sernin/
 │       ├── connexion.js Page de connexion
 │       ├── cours.js     Charge cours/index.json, recherche, affiche le Markdown (marked)
 │       ├── python.js    Python solo : Pyodide, input() via prompt, ouvrir/télécharger .py, sauvegarde localStorage
-│       ├── visio.js     Page visio : compte requis, salon Jitsi (préfixe "nsi-st-sernin-"), barre de la salle
+│       ├── visio-config.js  Adresse de notre serveur Jitsi (vide = meet.jit.si)
+│       ├── visio.js     Page visio : compte requis, jeton de visio, salon Jitsi, barre de la salle
 │       ├── salle.js     Salle (salons/{nom}) : hôte, présence, droits de modification, modules activés
 │       ├── python-partage.js  Code synchronisé en temps réel, curseurs des autres, exécution et sortie partagées
 │       ├── executeur.js Pilote le worker Python : exécuter, arrêter, délai maximum (20 s)
@@ -56,6 +59,13 @@ nsi-saint-sernin/
 │   ├── premiere/*.md    Cours de Première
 │   └── terminale/*.md   Cours de Terminale
 ├── docs/FIREBASE.md     Guide de mise en place Firebase (pour les admins)
+├── docs/JITSI.md        Guide : notre serveur Jitsi sur Oracle Cloud (pour les admins)
+├── serveur/             Notre serveur de visio (pas utilisé par les pages ; tourne sur Oracle) :
+│   ├── installer.sh     Installation complète sur le serveur (pare-feu, Docker, Jitsi, lancement)
+│   ├── preparer.sh      Prépare le dossier Jitsi et sa configuration (.env)
+│   ├── docker-compose.nsi.yml  Ajoute Caddy (HTTPS) et le service de jetons à Jitsi
+│   ├── Caddyfile        /jeton → service de jetons, le reste → Jitsi
+│   └── jeton/serveur.mjs  Service de jetons : vérifie le compte Firebase, signe le jeton Jitsi
 └── tests/               Tests des règles de sécurité (outil de dev, npm, pas utilisé par le site)
 ```
 
@@ -101,7 +111,7 @@ Les scripts classiques (non-modules) peuvent écouter l'événement `nsi:compte`
 | marked | dernière (jsdelivr) | Rendu Markdown des cours |
 | Firebase JS SDK | 10.14.1 (gstatic, modules ES) | Comptes (Auth) et base de données temps réel (Realtime Database) |
 | diff-match-patch | 20121119 (cdnjs) | Fusion des modifications simultanées du code partagé |
-| Jitsi Meet External API | `meet.jit.si/external_api.js` | Visio, partage d'écran, tchat |
+| Jitsi Meet External API | `<serveur>/external_api.js` | Visio, partage d'écran, tchat |
 
 ## Lancer le site en local
 

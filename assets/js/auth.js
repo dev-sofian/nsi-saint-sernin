@@ -178,6 +178,14 @@ export async function seConnecterGitHub() {
   await fb.a.signInWithPopup(fb.auth, fournisseur);
 }
 
+// Jeton Firebase (JWT signé par Google) de la personne connectée, pour prouver son identité
+// à un autre service (ex : le service de jetons de notre serveur de visio).
+export async function jetonFirebase() {
+  const fb = await chargerFirebase();
+  if (!fb.auth.currentUser) throw new Error("non-connecte");
+  return fb.auth.currentUser.getIdToken();
+}
+
 export async function seDeconnecter() {
   const fb = await chargerFirebase();
   await fb.a.signOut(fb.auth);

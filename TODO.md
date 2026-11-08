@@ -90,11 +90,12 @@ Le Python et le partage d'écran sont **dans** la visio, pas dans des pages sép
 
 ### Architecture
 
-- [ ] **⚠ décision** : partie audio/vidéo.
-  - Garder **Jitsi** pour la vidéo et l'audio, et gérer tout le reste (participants, droits, Python, demandes de partage, tchat, main levée) dans Firebase. Limite : sur `meet.jit.si`, l'intégration peut être limitée en durée et on ne contrôle pas finement l'interface.
-  - Ou passer à **LiveKit** (offre cloud gratuite limitée, SDK JavaScript) pour contrôler entièrement l'interface, les droits et le partage d'écran. Plus de travail, mais nécessaire pour un vrai « demander à un participant de partager ».
-  - Recommandation : prototype avec Jitsi + Firebase, puis LiveKit si les limites gênent.
-- [x] Prototype : **Jitsi** (`meet.jit.si`) pour l'audio/vidéo, tout le reste dans la Realtime Database.
+- [x] **Décision (admins)** : audio/vidéo = **notre propre Jitsi** sur un serveur **Oracle Cloud gratuit** (Always Free), car `meet.jit.si` coupe les appels intégrés au bout de 5 minutes et les offres gratuites de Jitsi as a Service (25 utilisateurs/mois) et LiveKit (≈ 5 000 min/mois) sont trop justes. Repli possible : Daily.co.
+- [x] Code prêt (`serveur/`, testé en local avec Docker) : Jitsi `stable-11031` + Caddy (HTTPS) + **service de jetons** (`serveur/jeton/serveur.mjs`) qui vérifie le compte Firebase et les bans avant de laisser entrer ; hôte/prof/admin = modérateurs Jitsi, élèves = participants.
+- [ ] **Admins** : créer le serveur Oracle, le domaine DuckDNS, lancer `serveur/installer.sh`, remplir `assets/js/visio-config.js` → `docs/JITSI.md`.
+- [ ] Vérifier la politique d'Oracle sur les serveurs gratuits « inactifs » (risque de récupération), voir `docs/JITSI.md`.
+- [ ] Passer à une version plus récente de Jitsi (images sur ghcr.io) quand on pourra la tester.
+- [x] Tout le reste (salles, droits, Python, présence) dans la Realtime Database.
 - [~] Modèle de données (Realtime Database, voir l'en-tête de `database.rules.json`) :
   ```
   salons/{nom}                (nom = nom de la salle nettoyé, ex : nsi-terminale-b)
@@ -146,7 +147,8 @@ Le Python et le partage d'écran sont **dans** la visio, pas dans des pages sép
 - [x] Visio réservée aux personnes connectées et non bannies.
 - [x] Présence : liste des participants à jour en direct (retrait automatique à la déconnexion).
 - [ ] Salle d'attente / code de salon (voir décision Phase 1).
-- [ ] L'hôte peut couper le micro d'un participant, le **kick** ; un admin peut **ban**.
+- [x] Avec notre Jitsi : l'hôte, les profs et les admins sont modérateurs (couper un micro, exclure) ; un banni ne peut plus obtenir de jeton de visio.
+- [ ] Bannir depuis le site (phase 4) ; aujourd'hui : console Firebase.
 
 ---
 

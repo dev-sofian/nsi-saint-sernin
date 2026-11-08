@@ -274,7 +274,7 @@ export class PythonPartage {
     for (const [uid, c] of Object.entries(curseurs)) {
       if (uid === this.uid || this.marqueurs.has(uid)) continue;
       const trait = document.createElement("span");
-      trait.className = "curseur-distant";
+      trait.className = c.l === 0 ? "curseur-distant curseur-ligne1" : "curseur-distant"; // étiquette sous la 1re ligne
       trait.style.borderColor = couleur(uid);
       const nom = document.createElement("span");
       nom.className = "curseur-nom";
