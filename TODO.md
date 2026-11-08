@@ -1,4 +1,4 @@
-# TODO — Feuille de route NSI en ligne
+# TODO — Feuille de route NSI St Sernin
 
 Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · **⚠ décision** = à valider par les admins avant de coder.
 
@@ -19,33 +19,34 @@ Ordre conseillé : **Phase 1 → 2 → 3 → 4 → 5**. Chaque phase doit laisse
 
 Le site est statique (GitHub Pages) : impossible de sécuriser des comptes ou des bannissements en JavaScript seul, car tout le code client est public et modifiable. Il faut un service qui applique les règles **côté serveur**.
 
-- [x] **Décision (admins)** : backend = **Firebase** (Authentication + Firestore).
-- [x] Code prêt : `assets/js/firebase-config.js` (config vide = site sans comptes), `assets/js/auth.js` (comptes et rôles), `firestore.rules` (sécurité), tests des règles dans `tests/`.
-- [ ] **Admins** : créer le projet Firebase et remplir `assets/js/firebase-config.js` → guide pas à pas dans `docs/FIREBASE.md`.
-- [ ] **Admins** : activer Anonyme + GitHub, ajouter `dev-sofian.github.io` et `127.0.0.1` aux domaines autorisés, publier `firestore.rules`.
+- [x] **Décision (admins)** : backend = **Firebase**.
+- [x] **Base de données = Realtime Database** (et non Firestore) depuis le Python partagé : Firestore facture une lecture par personne et par modification, ce qui dépasse le quota gratuit dès qu'une classe regarde quelqu'un taper ; la Realtime Database ne compte pas les opérations, est plus rapide et gère la présence (déconnexions). Détails : `docs/FIREBASE.md`.
+- [x] Code prêt : `assets/js/firebase-config.js` (config incomplète = site sans comptes), `assets/js/auth.js` (comptes et rôles), `database.rules.json` (sécurité), tests des règles dans `tests/`.
+- [x] **Admins** : créer le projet Firebase et remplir `assets/js/firebase-config.js`.
+- [ ] **Admins** : activer Anonyme + GitHub, domaines autorisés, **créer la Realtime Database (europe-west1) et publier `database.rules.json`** → `docs/FIREBASE.md`, étapes 3 à 5.
 
 ### Administrateurs
 
 - [x] Deux administrateurs : **Sofian E.** et **Vianney M.**
 - [x] Connexion **obligatoire via GitHub** (décision admins). Les règles refusent les droits d'admin à une session qui n'est pas connectée avec GitHub.
 - [x] Les admins sont identifiés par leur **UID Firebase**, jamais par leur nom affiché (un nom se falsifie).
-  - UID stockés dans `admins/{uid}`, modifiable uniquement depuis la console Firebase (règle `allow write: if false`).
+  - UID stockés dans `admins/{uid}`, modifiable uniquement depuis la console Firebase (aucune règle d'écriture).
   - La page Connexion affiche l'UID (« Identifiant technique ») pour faciliter l'ajout.
-- [ ] **Admins** : se déclarer dans `admins/` (`docs/FIREBASE.md`, étape 6).
+- [ ] **Admins** : se déclarer dans `admins/` de la Realtime Database (`docs/FIREBASE.md`, étape 6).
 - [~] Pouvoirs des admins :
   - [ ] **Kick** : exclure quelqu'un d'un salon en cours (il peut revenir) → avec les salons, phase 3.
-  - [~] **Ban** : `bans/{uid}` (pseudo, motif, auteurUid, date). Règles faites et testées (un admin ne peut ni se bannir ni bannir un autre admin). Pour l'instant, bannir = créer le document dans la console ; interface en phase 4.
+  - [~] **Ban** : `bans/{uid}` (pseudo, motif, auteurUid, date). Règles faites et testées (un admin ne peut ni se bannir ni bannir un autre admin ; un banni ne peut plus lire ni écrire dans les salles). Pour l'instant, bannir = créer l'entrée dans la console ; interface en phase 4.
   - [ ] Voir la liste des bannis et lever un ban → phase 4.
   - [ ] Créer, fermer et verrouiller des salons → phase 3.
   - [ ] Ajouter, modifier ou supprimer des cours (optionnel, sinon via GitHub).
-- [x] Les règles Firestore refusent toute action d'admin venant d'un non-admin (testé dans `tests/regles.test.mjs`).
+- [x] Les règles refusent toute action d'admin venant d'un non-admin (testé dans `tests/regles.test.mjs`).
 - [x] Journal de modération `journal/{id}` : écrit par les admins, jamais modifiable ni effaçable (règles prêtes, utilisé en phase 4).
 
 ### Profs
 
 - [x] Connexion **via GitHub** (décision admins), rôle stocké dans `profs/{uid}` (nom, ajoutePar, date).
 - [x] Seul un admin peut ajouter ou retirer un prof (règles).
-- [ ] Droits des profs à définir avec les salons (phase 3) : a priori, créer et animer des salons comme hôte.
+- [x] Un prof a les **pouvoirs d'hôte dans toutes les salles** (activer le Python, donner les droits, modifier, arrêter une exécution).
 - [ ] Ajout d'un prof depuis le site (aujourd'hui : console, `docs/FIREBASE.md` étape 7) → phase 4.
 
 ### Élèves (participants)
@@ -93,31 +94,39 @@ Le Python et le partage d'écran sont **dans** la visio, pas dans des pages sép
   - Garder **Jitsi** pour la vidéo et l'audio, et gérer tout le reste (participants, droits, Python, demandes de partage, tchat, main levée) dans Firebase. Limite : sur `meet.jit.si`, l'intégration peut être limitée en durée et on ne contrôle pas finement l'interface.
   - Ou passer à **LiveKit** (offre cloud gratuite limitée, SDK JavaScript) pour contrôler entièrement l'interface, les droits et le partage d'écran. Plus de travail, mais nécessaire pour un vrai « demander à un participant de partager ».
   - Recommandation : prototype avec Jitsi + Firebase, puis LiveKit si les limites gênent.
-- [ ] Modèle de données Firestore (proposition) :
+- [x] Prototype : **Jitsi** (`meet.jit.si`) pour l'audio/vidéo, tout le reste dans la Realtime Database.
+- [~] Modèle de données (Realtime Database, voir l'en-tête de `database.rules.json`) :
   ```
-  salons/{salonId}
-    nom, hoteUid, cree, verrouille, modules: { python: bool, partage: bool }
-    participants/{uid}   pseudo, role ("hote" | "participant"), mainLevee, peutEditer, enLigne
-    messages/{id}        auteurUid, pseudo, texte, date
-    python/etat          code, version, derniereSortie, executePar, executeLe
-    demandesPartage/{id} cibleUid, statut ("en_attente" | "acceptee" | "refusee")
+  salons/{nom}                (nom = nom de la salle nettoyé, ex : nsi-terminale-b)
+    hote                      uid du premier arrivé                       [x]
+    modules/python            bool                                        [x]
+    editeurs/{uid}            true = peut modifier/exécuter le Python     [x]
+    participants/{uid}        { pseudo, depuis } + suppression auto       [x]
+    python/code               { texte, v, par, pseudo }                   [x]
+    python/sortie             { texte, erreur, etat, par, pseudo, date }  [x]
+    python/curseurs/{uid}     { l, c, pseudo }                            [x]
+    messages/{id}             auteurUid, pseudo, texte, date              [ ]
+    mainsLevees/{uid}         date                                        [ ]
+    demandesPartage/{id}      cibleUid, statut                            [ ]
+    verrouille, code d'accès                                              [ ]
   ```
+- [ ] Les salles ne sont jamais effacées : prévoir un nettoyage (par un admin) des salles inactives.
 - [ ] Mise en page de la salle : vidéos des participants + zone centrale qui affiche le module actif (Python, partage d'écran, ou rien) + panneau latéral (participants, tchat).
 
 ### Module Python (exercices en direct)
 
-- [ ] L'hôte active le module : l'éditeur apparaît pour **tout le monde** dans la salle.
-- [ ] Par défaut, seul l'hôte modifie le code. L'hôte peut **autoriser** un ou plusieurs participants à modifier et exécuter (champ `peutEditer`), et retirer ce droit à tout moment.
-- [ ] Édition **en temps réel** : tout le monde voit les modifications au fil de la frappe.
-  - Simple : synchroniser le texte complet via Firestore avec un léger délai (ok si un seul éditeur à la fois).
-  - Robuste (plusieurs éditeurs simultanés) : **Yjs** + liaison CodeMirror (`y-codemirror`), avec un fournisseur de synchronisation. **⚠ décision** selon le besoin.
-  - Envisager CodeMirror 6, mieux supporté par Yjs que la version 5 actuelle.
-- [ ] **Sortie partagée** : quand quelqu'un d'autorisé clique « Exécuter », tout le monde voit la même sortie au même moment.
-  - Recommandation : le code est exécuté **par une seule personne** (celle qui clique) avec Pyodide, puis la sortie est publiée dans `python/etat.derniereSortie`. Évite des résultats différents (aléatoire, `input()`).
-  - Limiter la taille de la sortie publiée et prévoir un délai maximum d'exécution (boucles infinies) : exécuter Pyodide dans un **Web Worker** pour pouvoir l'arrêter.
-- [ ] Afficher qui a exécuté et quand ; bouton « Arrêter » pour l'hôte.
-- [ ] Charger un exercice : l'hôte peut ouvrir un fichier `.py` ou un exercice depuis les cours.
-- [ ] Chacun peut **télécharger** le code courant.
+- [x] **Dans la page visio**, dans une **fenêtre flottante** déplaçable (barre de titre), redimensionnable (coin), réductible ; position mémorisée. Sur téléphone : panneau fixe en bas de l'écran. Composant réutilisable `assets/js/fenetre.js` (servira au bureau de la phase 2).
+- [x] L'hôte active le module : la fenêtre s'ouvre pour **tout le monde** ; s'il le désactive, elle se ferme chez les participants.
+- [x] Par défaut, seul l'hôte (et les admins/profs) modifie le code. Bouton « Droits » : l'hôte coche qui peut modifier et exécuter, et peut retirer ce droit à tout moment.
+- [x] Édition **en temps réel**, plusieurs éditeurs simultanés possibles (décision admins : « vraiment en temps réel ») : synchronisation différentielle par transactions + fusion *diff-match-patch*, numéro de version vérifié par les règles. Environ 60 ms entre une frappe et son affichage chez les autres (mesuré avec l'émulateur).
+- [x] Curseurs des autres éditeurs affichés en couleur avec leur pseudo.
+- [x] **Sortie partagée** : exécutée par la personne qui clique (Pyodide dans un **Web Worker**), publiée au fil de l'eau dans `python/sortie` ; sortie limitée à 20 000 caractères, arrêt automatique après 20 s.
+- [x] `input()` : lit les lignes du champ « Entrées » (tout le monde voit les mêmes valeurs).
+- [x] Affiche qui a exécuté et l'état (en cours, terminé, erreur, arrêté) ; bouton « Arrêter » pour la personne qui exécute et pour l'hôte.
+- [x] Ouvrir un fichier `.py` (remplace le code de la salle après confirmation) ; chacun peut **télécharger** le code.
+- [ ] Charger un exercice directement depuis les cours (avec le bouton « Essayer ce code », phase 5).
+- [ ] Afficher l'heure d'exécution.
+- [ ] Limite : l'historique d'annulation (Ctrl+Z) contient aussi les modifications des autres.
 
 ### Module Partage d'écran
 
@@ -132,8 +141,10 @@ Le Python et le partage d'écran sont **dans** la visio, pas dans des pages sép
 
 ### Autres fonctions de la salle
 
-- [ ] **Tchat écrit** intégré (Firestore), avec suppression de message par l'hôte ou un admin.
+- [ ] **Tchat écrit** intégré (Realtime Database), avec suppression de message par l'hôte ou un admin.
 - [ ] **Lever la main** : bouton, liste ordonnée des mains levées pour l'hôte, l'hôte peut baisser une main.
+- [x] Visio réservée aux personnes connectées et non bannies.
+- [x] Présence : liste des participants à jour en direct (retrait automatique à la déconnexion).
 - [ ] Salle d'attente / code de salon (voir décision Phase 1).
 - [ ] L'hôte peut couper le micro d'un participant, le **kick** ; un admin peut **ban**.
 
@@ -141,7 +152,7 @@ Le Python et le partage d'écran sont **dans** la visio, pas dans des pages sép
 
 ## Phase 4 — Administration
 
-- [ ] Page / fenêtre **Admin** (visible et accessible uniquement aux admins, vérifié par les règles Firestore) :
+- [ ] Page / fenêtre **Admin** (visible et accessible uniquement aux admins, vérifié par `database.rules.json`) :
   - [ ] liste des salons ouverts, possibilité de les fermer ;
   - [ ] liste des participants connectés, kick / ban ;
   - [ ] liste des bans avec motif, levée de ban ;
@@ -162,6 +173,6 @@ Le Python et le partage d'écran sont **dans** la visio, pas dans des pages sép
 ## Notes pour l'IA qui travaille sur ce dépôt
 
 - Respecter les conventions du `README.md` (français, pas de framework, `textContent` pour les entrées utilisateur).
-- Ne jamais coder une vérification d'admin **uniquement** côté client : toujours la doubler par une règle Firestore.
+- Ne jamais coder une vérification d'admin **uniquement** côté client : toujours la doubler par une règle dans `database.rules.json`, avec un test dans `tests/regles.test.mjs`.
 - Avant toute décision marquée **⚠ décision**, demander aux admins.
 - Cocher les cases de ce fichier au fur et à mesure.

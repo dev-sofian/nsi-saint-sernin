@@ -1,4 +1,4 @@
-# NSI en ligne
+# NSI St Sernin
 
 Site d'entraide créé par des élèves pour rattraper les cours de NSI manqués pendant les blocus du lycée.
 Il regroupe : les cours de NSI, une salle de classe virtuelle (visio) avec un éditeur Python partagé et du partage d'écran, un tchat et la main levée.
@@ -7,47 +7,56 @@ Il regroupe : les cours de NSI, une salle de classe virtuelle (visio) avec un é
 
 ---
 
-## État actuel (v0.1, prototype statique + comptes)
+## État actuel (v0.2, prototype statique + comptes + Python partagé)
 
 - Site **100 % statique** (HTML, CSS, JavaScript sans framework ni build), hébergé sur **GitHub Pages**.
-- Comptes et rôles via **Firebase** (Authentication + Firestore), appelé directement depuis le navigateur :
-  élèves en connexion anonyme avec un pseudo, profs et admins via GitHub. Mise en place : `docs/FIREBASE.md`.
-  Tant que `assets/js/firebase-config.js` est vide, le site fonctionne sans comptes.
-- La sécurité (qui est admin, qui est banni…) est appliquée par `firestore.rules`, côté serveur.
-- La visio est un simple salon **Jitsi Meet** (serveur public `meet.jit.si`) intégré dans `visio.html`.
-- L'éditeur Python est **séparé** de la visio (`python.html`) et purement local (pas de partage).
-- L'interface est volontairement basique : elle sera refaite (voir `TODO.md`, section UI).
+- Comptes, rôles et salles via **Firebase** (Authentication + **Realtime Database**), appelé directement
+  depuis le navigateur : élèves en connexion anonyme avec un pseudo, profs et admins via GitHub.
+  Mise en place : `docs/FIREBASE.md`. Si `assets/js/firebase-config.js` est incomplet, le site fonctionne sans comptes.
+- La sécurité (qui est admin, qui est banni, qui peut modifier le code…) est appliquée par
+  `database.rules.json`, côté serveur.
+- La visio est un salon **Jitsi Meet** (serveur public `meet.jit.si`) intégré dans `visio.html`, réservé aux personnes connectées.
+- Dans la visio, un **Python partagé en temps réel** s'ouvre dans une **fenêtre flottante** déplaçable :
+  l'hôte l'active pour tous, choisit qui peut modifier/exécuter, et tout le monde voit le code,
+  les curseurs et la sortie en direct.
+- `python.html` reste un éditeur Python **solo** (local, sans partage).
+- L'interface est volontairement basique : elle sera refaite (voir `TODO.md`, phase 2).
 
 ## Structure des fichiers
 
 ```
-nsi-classe/
+nsi-saint-sernin/
 ├── README.md            Ce fichier : présentation et conventions
 ├── TODO.md              Feuille de route et spécifications détaillées
 ├── index.html           Accueil (3 cartes : Cours, Python, Visio)
 ├── cours.html           Liste + lecture des cours en Markdown
-├── python.html          Éditeur CodeMirror + exécution Python (Pyodide)
-├── visio.html           Salon Jitsi intégré
+├── python.html          Python solo : éditeur CodeMirror + exécution Pyodide (local)
+├── visio.html           Salle : visio Jitsi + fenêtre flottante « Python partagé »
 ├── connexion.html       Connexion (élève anonyme / prof-admin GitHub), mon compte
-├── firestore.rules      Règles de sécurité Firestore (la vraie sécurité du site)
+├── database.rules.json  Règles de sécurité de la Realtime Database (la vraie sécurité du site)
 ├── firebase.json        Config Firebase CLI (publication des règles, émulateurs de test)
 ├── .nojekyll            Empêche GitHub Pages de passer le site dans Jekyll
 ├── assets/
 │   ├── css/style.css    Style commun (thème clair/sombre automatique)
 │   └── js/
-│       ├── firebase-config.js  Config Firebase publique (vide = pas de comptes)
-│       ├── auth.js      Module partagé : connexion, déconnexion, pseudo, rôle (admin/prof/eleve), ban
+│       ├── firebase-config.js  Config Firebase publique (incomplète = pas de comptes)
+│       ├── auth.js      Module partagé : connexion, déconnexion, pseudo, rôle (admin/prof/eleve), ban, accès au SDK
 │       ├── compte.js    Zone « compte » de la barre du haut + événement "nsi:compte"
 │       ├── connexion.js Page de connexion
 │       ├── cours.js     Charge cours/index.json, recherche, affiche le Markdown (marked)
-│       ├── python.js    Pyodide : stdout/stderr vers la console, input() via prompt, ouvrir/télécharger .py, sauvegarde localStorage
-│       └── visio.js     Crée le salon Jitsi (préfixe "nsi-en-ligne-"), bouton "ouvrir dans un onglet"
+│       ├── python.js    Python solo : Pyodide, input() via prompt, ouvrir/télécharger .py, sauvegarde localStorage
+│       ├── visio.js     Page visio : compte requis, salon Jitsi (préfixe "nsi-st-sernin-"), barre de la salle
+│       ├── salle.js     Salle (salons/{nom}) : hôte, présence, droits de modification, modules activés
+│       ├── python-partage.js  Code synchronisé en temps réel, curseurs des autres, exécution et sortie partagées
+│       ├── executeur.js Pilote le worker Python : exécuter, arrêter, délai maximum (20 s)
+│       ├── python-worker.js   Pyodide dans un Web Worker ; input() lit le champ « Entrées »
+│       └── fenetre.js   Fenêtre flottante réutilisable : déplacer, redimensionner, réduire, fermer
 ├── cours/
 │   ├── index.json       Catalogue : niveaux → chapitres {titre, theme, fichier}
 │   ├── premiere/*.md    Cours de Première
 │   └── terminale/*.md   Cours de Terminale
 ├── docs/FIREBASE.md     Guide de mise en place Firebase (pour les admins)
-└── tests/               Tests des règles Firestore (outil de dev, npm, pas utilisé par le site)
+└── tests/               Tests des règles de sécurité (outil de dev, npm, pas utilisé par le site)
 ```
 
 ## Comptes et rôles
@@ -68,7 +77,20 @@ ecouterCompte((compte) => {
 ```
 
 Les scripts classiques (non-modules) peuvent écouter l'événement `nsi:compte` envoyé par `compte.js` (`ev.detail` = compte).
-**Le rôle côté navigateur sert uniquement à l'affichage** : toute action protégée doit être vérifiée dans `firestore.rules`, avec un test dans `tests/regles.test.mjs`.
+**Le rôle côté navigateur sert uniquement à l'affichage** : toute action protégée doit être vérifiée dans `database.rules.json`, avec un test dans `tests/regles.test.mjs`.
+
+## Python partagé : comment ça marche
+
+- **Code** (`salons/{nom}/python/code` = `{ texte, v, par, pseudo }`) : à chaque frappe (regroupées par 40 ms),
+  le navigateur envoie le texte dans une **transaction**. Si quelqu'un a modifié le code entre-temps, on
+  applique nos changements (calculés avec *diff-match-patch*) sur sa version au lieu de l'écraser :
+  plusieurs personnes peuvent taper en même temps. `v` augmente de 1 à chaque écriture (vérifié par les règles).
+- **Curseurs** (`python/curseurs/{uid}`) : position des personnes qui peuvent modifier, affichée en couleur avec leur pseudo.
+- **Exécution** : seule la personne qui clique exécute (Pyodide dans un **Web Worker**, arrêt possible,
+  20 s maximum) et publie la sortie dans `python/sortie` au fil de l'eau ; tout le monde voit la même chose.
+  `input()` lit les lignes du champ « Entrées ».
+- **Droits** : l'hôte (premier arrivé dans la salle), les admins et les profs peuvent modifier ; l'hôte
+  coche dans « Droits » qui d'autre peut modifier et exécuter (`editeurs/{uid}`).
 
 ## Bibliothèques utilisées (chargées par CDN, pas de npm)
 
@@ -77,7 +99,8 @@ Les scripts classiques (non-modules) peuvent écouter l'événement `nsi:compte`
 | CodeMirror | 5.65.16 (cdnjs) | Éditeur de code Python |
 | Pyodide | 0.26.4 (jsdelivr) | Python en WebAssembly dans le navigateur |
 | marked | dernière (jsdelivr) | Rendu Markdown des cours |
-| Firebase JS SDK | 10.14.1 (gstatic, modules ES) | Comptes (Auth) et base de données (Firestore) |
+| Firebase JS SDK | 10.14.1 (gstatic, modules ES) | Comptes (Auth) et base de données temps réel (Realtime Database) |
+| diff-match-patch | 20121119 (cdnjs) | Fusion des modifications simultanées du code partagé |
 | Jitsi Meet External API | `meet.jit.si/external_api.js` | Visio, partage d'écran, tchat |
 
 ## Lancer le site en local
