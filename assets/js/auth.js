@@ -1,13 +1,13 @@
-// Comptes et rôles (Firebase Authentication + Firestore).
+// Comptes et rôles (Firebase Authentication + Realtime Database).
 // Module partagé par toutes les pages : import { ecouterCompte, ... } from "./auth.js".
 //
 // Rôles :
-//   "admin" : connecté avec GitHub ET présent dans la collection admins/
-//   "prof"  : connecté avec GitHub ET présent dans la collection profs/
+//   "admin" : connecté avec GitHub ET présent dans admins/ de la base
+//   "prof"  : connecté avec GitHub ET présent dans profs/ de la base
 //   "eleve" : tout le reste (connexion anonyme avec un pseudo, ou GitHub sans rôle)
 //
 // Attention : le rôle calculé ici sert uniquement à l'affichage. Les droits réels
-// sont vérifiés par firestore.rules.
+// sont vérifiés par database.rules.json.
 
 import { configFirebase, firebaseConfigure } from "./firebase-config.js";
 
@@ -17,7 +17,7 @@ const URL_SDK = `https://www.gstatic.com/firebasejs/${VERSION_SDK}`;
 export { firebaseConfigure };
 
 // 2 à 20 caractères : lettres (accents compris), chiffres, espace, _ . ' -
-// Doit rester identique à pseudoValide() dans firestore.rules.
+// Doit rester identique à la règle utilisateurs/$uid/pseudo de database.rules.json.
 const MOTIF_PSEUDO = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9 _.'-]{2,20}$/;
 
 export function pseudoValide(pseudo) {
@@ -43,19 +43,26 @@ function chargerFirebase() {
   if (!firebaseConfigure) return Promise.reject(new Error("firebase-non-configure"));
   if (!promesseFirebase) {
     promesseFirebase = (async () => {
-      const [appMod, authMod, fsMod] = await Promise.all([
+      const [appMod, authMod, dbMod] = await Promise.all([
         import(`${URL_SDK}/firebase-app.js`),
         import(`${URL_SDK}/firebase-auth.js`),
-        import(`${URL_SDK}/firebase-firestore.js`),
+        import(`${URL_SDK}/firebase-database.js`),
       ]);
       const app = appMod.initializeApp(configFirebase);
       const auth = authMod.getAuth(app);
       auth.languageCode = "fr";
-      const db = fsMod.getFirestore(app);
-      return { auth, db, a: authMod, f: fsMod };
+      const db = dbMod.getDatabase(app);
+      // a = fonctions d'authentification, d = fonctions de la base (ref, get, set, onValue…)
+      return { auth, db, a: authMod, d: dbMod };
     })();
   }
   return promesseFirebase;
+}
+
+// Accès au SDK pour les autres modules (ex : python-partage.js).
+// Renvoie { auth, db, a, d } : a = fonctions d'authentification, d = fonctions de la base.
+export function firebase() {
+  return chargerFirebase();
 }
 
 // ---------- Lecture du compte courant ----------
@@ -65,13 +72,13 @@ function chargerFirebase() {
 let pseudoEnAttente = null;
 
 async function lireCompte(fb, utilisateur) {
-  const { db, f } = fb;
+  const { db, d } = fb;
   const uid = utilisateur.uid;
   const fournisseur = utilisateur.isAnonymous
     ? "anonymous"
     : (utilisateur.providerData[0]?.providerId || "inconnu");
 
-  const lire = (collection) => f.getDoc(f.doc(db, collection, uid)).catch(() => null);
+  const lire = (dossier) => d.get(d.ref(db, `${dossier}/${uid}`)).catch(() => null);
   const [ban, admin, prof] = await Promise.all([lire("bans"), lire("admins"), lire("profs")]);
 
   const banni = Boolean(ban && ban.exists());
@@ -82,10 +89,10 @@ async function lireCompte(fb, utilisateur) {
     const pseudo = pseudoEnAttente || pseudoDepuis(utilisateur.displayName);
     pseudoEnAttente = null;
     try {
-      await f.setDoc(f.doc(db, "utilisateurs", uid), {
+      await d.set(d.ref(db, `utilisateurs/${uid}`), {
         pseudo,
         fournisseur,
-        cree: f.serverTimestamp(),
+        cree: d.serverTimestamp(),
       });
       profil = await lire("utilisateurs");
     } catch (e) {
@@ -101,10 +108,10 @@ async function lireCompte(fb, utilisateur) {
     uid,
     fournisseur,
     anonyme: utilisateur.isAnonymous,
-    pseudo: profil && profil.exists() ? profil.data().pseudo : pseudoDepuis(utilisateur.displayName),
+    pseudo: profil && profil.exists() ? profil.val().pseudo : pseudoDepuis(utilisateur.displayName),
     role,
     banni,
-    motifBan: banni ? (ban.data().motif || "") : "",
+    motifBan: banni ? (ban.val().motif || "") : "",
   };
 }
 
@@ -182,15 +189,15 @@ export async function changerPseudo(pseudo) {
   const fb = await chargerFirebase();
   const utilisateur = fb.auth.currentUser;
   if (!utilisateur) throw new Error("non-connecte");
-  const ref = fb.f.doc(fb.db, "utilisateurs", utilisateur.uid);
-  const existe = (await fb.f.getDoc(ref)).exists();
+  const ref = fb.d.ref(fb.db, `utilisateurs/${utilisateur.uid}`);
+  const existe = (await fb.d.get(ref)).exists();
   if (existe) {
-    await fb.f.updateDoc(ref, { pseudo });
+    await fb.d.update(ref, { pseudo });
   } else {
-    await fb.f.setDoc(ref, {
+    await fb.d.set(ref, {
       pseudo,
       fournisseur: utilisateur.isAnonymous ? "anonymous" : utilisateur.providerData[0]?.providerId,
-      cree: fb.f.serverTimestamp(),
+      cree: fb.d.serverTimestamp(),
     });
   }
   if (compteCourant) {
@@ -201,7 +208,8 @@ export async function changerPseudo(pseudo) {
 
 // Message d'erreur lisible à partir d'une erreur Firebase.
 export function messageErreur(e) {
-  const code = (e && (e.code || e.message)) || "";
+  let code = (e && (e.code || e.message)) || "";
+  if (String(code).toUpperCase().includes("PERMISSION_DENIED")) code = "PERMISSION_DENIED";
   const messages = {
     "pseudo-invalide": "Le pseudo doit faire 2 à 20 caractères (lettres, chiffres, espace, _ . ' -).",
     "firebase-non-configure": "Les comptes ne sont pas encore activés sur ce site.",
@@ -212,7 +220,8 @@ export function messageErreur(e) {
     "auth/unauthorized-domain": "Ce domaine n'est pas autorisé dans Firebase (voir docs/FIREBASE.md, étape 4).",
     "auth/operation-not-allowed": "Ce mode de connexion n'est pas activé dans Firebase.",
     "auth/network-request-failed": "Problème de réseau, réessaie.",
-    "permission-denied": "Action refusée.",
+    "PERMISSION_DENIED": "Action refusée : tu n'as pas les droits pour ça.",
+    "non-connecte": "Tu dois être connecté.",
   };
   return messages[code] || "Une erreur est survenue, réessaie.";
 }

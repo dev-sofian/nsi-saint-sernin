@@ -172,10 +172,112 @@ input[type="text"], input[type="search"] {
 .console .err { color: #ff8787; }
 
 /* Visio */
-.visio-layout { display: grid; grid-template-columns: 1fr; gap: 12px; }
-.jitsi { height: 70vh; border-radius: 10px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); }
+.container.large { max-width: none; }
+.jitsi {
+  height: calc(100vh - 180px);
+  min-height: 360px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+/* Fenêtres flottantes (assets/js/fenetre.js) */
+.fenetre {
+  position: fixed;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+  overflow: hidden;
+}
+.fenetre-titre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+.fenetre-titre:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.fenetre-nom { font-weight: 600; }
+.fenetre-boutons { margin-left: auto; display: flex; gap: 4px; }
+.fenetre-boutons button {
+  width: 28px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+.fenetre-boutons button:hover { border-color: var(--accent); }
+.fenetre-corps { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px; overflow: hidden; }
+.fenetre-poignee {
+  position: absolute; right: 0; bottom: 0;
+  width: 18px; height: 18px;
+  cursor: nwse-resize;
+  touch-action: none;
+  background: linear-gradient(135deg, transparent 50%, var(--border) 50%);
+}
+.fenetre.reduite .fenetre-corps, .fenetre.reduite .fenetre-poignee { display: none; }
+/* Pendant un glissement, la visio (iframe) ne capte plus la souris */
+body.fenetre-glisse iframe { pointer-events: none; }
+body.fenetre-glisse { user-select: none; }
+
+/* Python partagé */
+.py-barre { margin: 0; }
+.py-barre .btn { padding: 6px 10px; }
+.py-editeur-wrap { flex: 3; min-height: 80px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.py-editeur-wrap .CodeMirror { height: 100%; font-size: 14px; }
+.py-entrees textarea {
+  width: 100%;
+  margin-top: 4px;
+  font-family: ui-monospace, monospace;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.py-sortie-titre { font-weight: 600; }
+.console.py-console { flex: 2; min-height: 60px; height: auto; font-size: 13px; }
+.py-participants { display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; max-height: 30%; overflow: auto; }
+.py-participants p { margin: 0 0 4px; }
+.ligne-participant { display: flex; gap: 8px; align-items: center; }
+#py-info.err, .petit.err { color: #e03131; }
+#py-droits { font-size: .75rem; }
+
+/* Curseurs des autres éditeurs dans CodeMirror */
+.curseur-distant { position: relative; border-left: 2px solid; margin: 0 -1px; }
+.curseur-nom {
+  position: absolute;
+  top: -1.25em;
+  left: -2px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font: 11px/1.3 system-ui, sans-serif;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+  animation: estomper .4s 2.5s forwards; /* l'étiquette s'efface pour ne pas cacher le code */
+}
+@keyframes estomper { to { opacity: 0; } }
 
 @media (max-width: 800px) {
+  /* Sur téléphone, la fenêtre Python occupe le bas de l'écran et ne se déplace pas */
+  .fenetre { left: 0 !important; right: 0; bottom: 0; top: auto !important; width: 100% !important; height: 70vh !important; border-radius: 10px 10px 0 0; }
+  .fenetre.reduite { height: auto !important; }
+  .fenetre-titre { cursor: default; }
+  .fenetre-poignee { display: none; }
   .layout-cours { grid-template-columns: 1fr; }
   .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
   .ide { grid-template-columns: 1fr; }

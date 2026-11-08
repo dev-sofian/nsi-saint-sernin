@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visio — NSI en ligne</title>
+  <title>Visio — NSI St Sernin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
   <header class="topbar">
-    <a href="index.html" class="logo">NSI en ligne</a>
+    <a href="index.html" class="logo">NSI St Sernin</a>
     <nav>
       <a href="index.html">Accueil</a>
       <a href="cours.html">Cours</a>
@@ -18,24 +20,79 @@
     <div id="zone-compte" class="zone-compte"></div>
   </header>
 
-  <main class="container">
-    <form id="form-salle" class="toolbar">
-      <input type="text" id="pseudo" placeholder="Ton prénom" required>
+  <main class="container large">
+    <!-- Pas connecté -->
+    <section id="visio-connexion" class="panneau" hidden>
+      <h2>Connecte-toi pour rejoindre une salle</h2>
+      <p class="muted">Les salles sont réservées aux élèves et profs connectés. Un simple pseudo suffit.</p>
+      <a class="btn primary" href="connexion.html?retour=visio.html">Se connecter</a>
+    </section>
+
+    <!-- Banni -->
+    <section id="visio-banni" class="alerte" hidden>
+      <strong>Ton accès aux salles a été bloqué par un administrateur.</strong>
+    </section>
+
+    <form id="form-salle" class="toolbar" hidden>
+      <input type="text" id="pseudo" placeholder="Ton prénom" hidden>
       <input type="text" id="salle" placeholder="Nom de la salle (ex : nsi-terminale-b)" required>
       <button class="btn primary" type="submit">Rejoindre</button>
-      <a id="lien-externe" class="btn" target="_blank" rel="noopener" hidden>Ouvrir dans un nouvel onglet</a>
+      <span id="visio-identite" class="muted"></span>
     </form>
-    <p class="muted">Partage d'écran, tchat et main levée sont dans la barre d'outils de la visio.</p>
 
-    <div class="visio-layout">
-      <div id="jitsi" class="jitsi"></div>
-      <aside class="mini-python">
-        <a href="python.html" target="_blank" class="btn">🐍 Ouvrir l'éditeur Python à côté</a>
-      </aside>
+    <div id="barre-salle" class="toolbar" hidden>
+      <strong id="nom-salle"></strong>
+      <span id="role-salle" class="badge"></span>
+      <button id="btn-python" class="btn" type="button">Python</button>
+      <button id="btn-module-python" class="btn" type="button" hidden></button>
+      <a id="lien-externe" class="btn" target="_blank" rel="noopener">Visio dans un onglet</a>
+      <button id="btn-quitter" class="btn" type="button">Quitter la salle</button>
+      <span id="visio-message" class="muted"></span>
     </div>
+
+    <div id="jitsi" class="jitsi"></div>
   </main>
 
-  <script src="assets/js/visio.js"></script>
+  <!-- Fenêtre flottante : Python partagé de la salle -->
+  <section id="fenetre-python" class="fenetre" hidden aria-label="Python partagé">
+    <header class="fenetre-titre" title="Glisser pour déplacer (ou flèches du clavier)">
+      <span class="fenetre-nom">Python partagé</span>
+      <span id="py-droits" class="badge"></span>
+      <span class="fenetre-boutons">
+        <button type="button" data-fenetre="reduire" title="Réduire" aria-label="Réduire">–</button>
+        <button type="button" data-fenetre="fermer" title="Fermer" aria-label="Fermer">×</button>
+      </span>
+    </header>
+    <div class="fenetre-corps">
+      <div class="toolbar py-barre">
+        <button id="py-executer" class="btn primary" type="button" disabled title="Ctrl+Entrée">Exécuter</button>
+        <button id="py-arreter" class="btn" type="button" hidden>Arrêter</button>
+        <button id="py-telecharger" class="btn" type="button">Télécharger</button>
+        <label id="py-label-fichier" class="btn" hidden>
+          Ouvrir un .py
+          <input type="file" id="py-fichier" accept=".py,.txt" hidden>
+        </label>
+        <button id="py-btn-participants" class="btn" type="button" hidden>Droits</button>
+        <span id="py-info" class="petit muted"></span>
+      </div>
+      <div id="py-participants" class="py-participants" hidden></div>
+      <div class="py-editeur-wrap">
+        <textarea id="py-editeur"></textarea>
+      </div>
+      <details id="py-entrees-bloc" class="py-entrees" hidden>
+        <summary>Entrées pour input() (une par ligne)</summary>
+        <textarea id="py-entrees" rows="3" spellcheck="false"></textarea>
+      </details>
+      <div class="py-sortie-titre petit">Sortie <span id="py-sortie-info" class="muted"></span></div>
+      <pre id="py-console" class="console py-console"></pre>
+    </div>
+    <div class="fenetre-poignee" aria-hidden="true"></div>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+  <script type="module" src="assets/js/visio.js"></script>
   <script type="module" src="assets/js/compte.js"></script>
 </body>
 </html>
