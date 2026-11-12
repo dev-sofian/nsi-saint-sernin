@@ -3,7 +3,7 @@
 // Adresse du serveur de visio auto-hébergé (PC de Sofian, voir docs/SERVEUR.md).
 // = https:// + DOMAINE choisi dans serveur/.env (ex : https://nsi-saint-sernin.duckdns.org).
 // Vide = visio indisponible sur le site en ligne (le reste fonctionne).
-export const URL_SERVEUR_VISIO = "";
+export const URL_SERVEUR_VISIO = "https://nsi-saint-sernin.duckdns.org";
 
 // Formulaire Google pour les élèves qui ne peuvent pas remettre leur papier en main propre.
 // Il doit demander UNIQUEMENT : nom d'utilisateur, code de vérification, classe.
