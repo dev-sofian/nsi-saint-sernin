@@ -28,6 +28,11 @@ if ! LC_ALL=C ufw status | grep -q "Status: active"; then
   exit 1
 fi
 
+# Dossiers du certificat HTTPS : Caddy tourne en root SANS ses super-pouvoirs (cap_drop: ALL),
+# il ne peut donc écrire que dans des dossiers qui appartiennent à root.
+mkdir -p data/caddy data/caddy-config
+chown -R 0:0 data/caddy data/caddy-config
+
 # Au cas où la démo tournerait encore (mêmes ports).
 docker compose --profile demo stop livekit-demo >/dev/null 2>&1 || true
 docker compose --profile en-ligne up -d --remove-orphans
