@@ -1,0 +1,34 @@
+# Caddy : seule porte d'entrée web du serveur (ports 80 et 443).
+# Le domaine vient de DOMAINE dans serveur/.env. Certificat HTTPS obtenu et renouvelé tout seul.
+
+{
+	# Pas d'interface d'administration de Caddy (elle écouterait sur localhost:2019).
+	admin off
+}
+
+{$DOMAINE} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	# Service jetons (comptes, liste blanche, droits) : écoute uniquement en local.
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8090
+	}
+
+	# Signalisation LiveKit (WebSocket). L'API d'administration de LiveKit (/twirp)
+	# n'est PAS exposée : seul le service jetons l'utilise, en local.
+	handle /rtc* {
+		reverse_proxy 127.0.0.1:7880
+	}
+
+	handle {
+		respond "Serveur de visio NSI St Sernin. Le site est sur GitHub Pages." 404
+	}
+}

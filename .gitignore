@@ -1,0 +1,9 @@
+# Secrets et données du serveur auto-hébergé (voir docs/SERVEUR.md)
+serveur/.env
+serveur/data/
+
+# Dépendances de test
+node_modules/
+
+# Divers
+.DS_Store

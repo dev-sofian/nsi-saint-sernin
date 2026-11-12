@@ -1,0 +1,23 @@
+# LiveKit, mode « en ligne ». Les clés ne sont PAS ici : variable LIVEKIT_KEYS (fichier .env).
+# Documentation : https://docs.livekit.io/home/self-hosting/deployment/
+
+# Signalisation (HTTP/WebSocket) : Caddy est devant, le pare-feu bloque ce port depuis l'extérieur.
+port: 7880
+
+rtc:
+  # Média : 7881/tcp (secours pour les réseaux qui bloquent l'UDP, ex. lycée) et 7882/udp.
+  # Ce sont les deux seuls ports de LiveKit ouverts sur la box et dans ufw.
+  tcp_port: 7881
+  udp_port: 7882
+  # Annonce l'IP publique de la box aux navigateurs (trouvée automatiquement par STUN).
+  use_external_ip: true
+
+room:
+  # Salle vidée et fermée 5 minutes après le départ du dernier participant.
+  empty_timeout: 300
+  departure_timeout: 20
+  # Une classe (15 personnes) avec de la marge.
+  max_participants: 30
+
+logging:
+  level: info

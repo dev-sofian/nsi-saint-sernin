@@ -1,3 +1,4 @@
+// FICHIER GÉNÉRÉ par outils/generer-regles.mjs : ne pas modifier à la main.
 // Règles de sécurité de la Realtime Database de NSI St Sernin.
 // C'est ICI que se fait la vraie sécurité : le code JavaScript du site est public
 // et modifiable, il ne fait qu'afficher ou cacher des boutons.
@@ -6,36 +7,49 @@
 //   admins/{uid}         administrateurs : valeur = nom (ajoutés à la main dans la console)
 //   profs/{uid}          professeurs : { nom, ajoutePar, date } (ajoutés par un admin)
 //   bans/{uid}           bannis : { pseudo, motif, auteurUid, date } (gérés par les admins)
-//   utilisateurs/{uid}   profil : { pseudo, fournisseur, cree }
+//   utilisateurs/{uid}   profil : { pseudo, fournisseur, cree, statut, nom? }
+//                          statut = "en_attente" (liste blanche pas encore validée) ou "actif"
+//                          nom    = nom d'utilisateur (comptes élèves à mot de passe)
+//   demandes/{uid}       demande d'accès d'un élève : { nom, code, classe, date }
+//                          le code est recopié sur le papier / le formulaire Google
 //   journal/{id}         journal de modération (ajout seulement, jamais modifiable)
 //   salons/{salon}       salle de classe :
 //     hote               uid de la personne qui a ouvert la salle
 //     modules/python     true si l'hôte a activé le Python pour tous
+//     modules/partage    true si l'hôte a activé le partage d'écran
 //     editeurs/{uid}     true si l'hôte autorise cette personne à modifier le code
 //     participants/{uid} { pseudo, depuis } (supprimé automatiquement à la déconnexion)
+//     mains/{uid}        { pseudo, date } : main levée
+//     messages/{id}      { par, pseudo, texte, date } : tchat
+//     partage            { cible, statut, par, date } : demande de partage d'écran en cours
+//                          statut = demande → accepte | refuse → fini
 //     python/code        { texte, v, par, pseudo } : v augmente de 1 à chaque modification
 //     python/sortie      { texte, erreur, etat, par, pseudo, date, arret }
 //     python/curseurs/{uid} { l, c, pseudo } : position du curseur des éditeurs
 //
 // Rôles : admin et prof exigent une connexion GitHub (sign_in_provider == 'github.com').
+// « Membre » = élève dont le compte a été validé par un admin (statut "actif"), ou prof, ou admin.
+// Seuls les membres non bannis accèdent aux salles. Sans compte : cours et Python solo seulement.
 // « Pouvoirs d'hôte » dans une salle = hôte de la salle, ou admin, ou prof.
-// Les expressions sont répétées car ce format de règles n'a pas de fonctions.
+// Ce format de règles n'a pas de fonctions : les conditions communes s'écrivent ici avec des
+// marqueurs ((auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()), (auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))), (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))…) remplacés par outils/generer-regles.mjs.
+//   Modifier CE fichier (outils/regles.template.jsonc), puis : node outils/generer-regles.mjs
 //
 // Tests : tests/regles.test.mjs (cd tests && npm test).
 {
   "rules": {
     "admins": {
-      ".read": "auth != null && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()",
+      ".read": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid"
       }
     },
 
     "profs": {
-      ".read": "auth != null && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()",
+      ".read": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()",
+        ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
         ".validate": "newData.hasChildren(['nom', 'ajoutePar', 'date'])",
         "nom": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40" },
         "ajoutePar": { ".validate": "newData.val() === auth.uid" },
@@ -45,12 +59,12 @@
     },
 
     "bans": {
-      ".read": "auth != null && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()",
+      ".read": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
       "$uid": {
         // La personne bannie peut lire son propre ban (pour afficher le motif).
         ".read": "auth != null && auth.uid === $uid",
         // Un admin ne peut ni se bannir lui-même, ni bannir un autre admin.
-        ".write": "auth != null && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists() && $uid !== auth.uid && !root.child('admins').child($uid).exists()",
+        ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()) && $uid !== auth.uid && !root.child('admins').child($uid).exists()",
         ".validate": "newData.hasChildren(['pseudo', 'motif', 'auteurUid', 'date'])",
         "pseudo": { ".validate": "newData.isString() && newData.val().length <= 40" },
         "motif": { ".validate": "newData.isString() && newData.val().length <= 300" },
@@ -61,25 +75,51 @@
     },
 
     "utilisateurs": {
+      // Liste de tous les comptes : admins seulement (page admin.html).
+      ".read": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || !root.child('bans').child(auth.uid).exists())",
-        ".write": "auth != null && ((auth.uid === $uid && !root.child('bans').child(auth.uid).exists()) || (!newData.exists() && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()))",
-        ".validate": "newData.hasChildren(['pseudo', 'fournisseur', 'cree'])",
+        ".read": "auth != null && auth.uid === $uid",
+        // Chacun écrit son profil (sauf banni) ; un admin peut le supprimer.
+        ".write": "auth != null && ((auth.uid === $uid && !root.child('bans').child(auth.uid).exists()) || (!newData.exists() && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())))",
+        ".validate": "newData.hasChildren(['pseudo', 'fournisseur', 'cree', 'statut'])",
         // 2 à 20 caractères : lettres (accents compris), chiffres, espace, _ . ' -
         "pseudo": { ".validate": "newData.isString() && newData.val().matches(/^[A-Za-zÀ-ÖØ-öø-ÿ0-9 _.'-]{2,20}$/)" },
-        "fournisseur": { ".validate": "newData.val() === auth.token.firebase.sign_in_provider" },
+        "fournisseur": { ".validate": "newData.val() === data.val() || (!data.exists() && newData.val() === auth.token.firebase.sign_in_provider)" },
         "cree": { ".validate": "(!data.exists() && newData.val() === now) || newData.val() === data.val()" },
+        // Liste blanche : on se crée « en attente » ; seul un admin passe un compte en « actif ».
+        "statut": {
+          ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
+          ".validate": "newData.val() === data.val() || (!data.exists() && newData.val() === 'en_attente') || ((auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()) && (newData.val() === 'actif' || newData.val() === 'en_attente'))"
+        },
+        // Nom d'utilisateur : doit correspondre à l'adresse technique du compte, ne change jamais.
+        "nom": { ".validate": "newData.val() === data.val() || (!data.exists() && newData.isString() && newData.val().matches(/^[a-z0-9_-]{3,20}$/) && newData.val() + '@nsi-saint-sernin.firebaseapp.com' === auth.token.email)" },
+        "$autre": { ".validate": false }
+      }
+    },
+
+    "demandes": {
+      ".read": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        // L'élève crée sa demande une seule fois, tant que son compte est en attente ;
+        // un admin la supprime (validation ou refus).
+        ".write": "auth != null && ((auth.uid === $uid && !root.child('bans').child(auth.uid).exists() && !data.exists() && root.child('utilisateurs').child(auth.uid).child('statut').val() === 'en_attente') || (!newData.exists() && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())))",
+        ".validate": "newData.hasChildren(['nom', 'code', 'classe', 'date'])",
+        "nom": { ".validate": "newData.isString() && newData.val() + '@nsi-saint-sernin.firebaseapp.com' === auth.token.email" },
+        "code": { ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Z2-9]{6}$/)" },
+        "classe": { ".validate": "newData.isString() && newData.val().length <= 20" },
+        "date": { ".validate": "newData.val() === now" },
         "$autre": { ".validate": false }
       }
     },
 
     "journal": {
-      ".read": "auth != null && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()",
+      ".read": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
       "$id": {
         // Ajout seulement : une entrée existante ne peut être ni modifiée ni effacée.
-        ".write": "auth != null && !data.exists() && auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()",
+        ".write": "auth != null && !data.exists() && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
         ".validate": "newData.hasChildren(['action', 'cibleUid', 'details', 'auteurUid', 'date'])",
-        "action": { ".validate": "newData.val() === 'ban' || newData.val() === 'deban' || newData.val() === 'ajout_prof' || newData.val() === 'retrait_prof' || newData.val() === 'kick'" },
+        "action": { ".validate": "newData.val() === 'ban' || newData.val() === 'deban' || newData.val() === 'ajout_prof' || newData.val() === 'retrait_prof' || newData.val() === 'kick' || newData.val() === 'validation' || newData.val() === 'refus' || newData.val() === 'suspension' || newData.val() === 'suppression' || newData.val() === 'fermeture_salle'" },
         "cibleUid": { ".validate": "newData.isString()" },
         "details": { ".validate": "newData.isString() && newData.val().length <= 300" },
         "auteurUid": { ".validate": "newData.val() === auth.uid" },
@@ -89,19 +129,27 @@
     },
 
     "salons": {
+      // Liste des salles : admins (page admin.html).
+      ".read": "auth != null && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
       "$salon": {
-        ".read": "auth != null && !root.child('bans').child(auth.uid).exists()",
+        ".read": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists()))))",
+        // Un admin peut fermer (supprimer) une salle.
+        ".write": "auth != null && !newData.exists() && (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists())",
         ".validate": "$salon.matches(/^[a-z0-9-]{1,60}$/)",
 
         // Le premier arrivé devient hôte ; seul un admin peut changer l'hôte ensuite.
         "hote": {
-          ".write": "auth != null && !root.child('bans').child(auth.uid).exists() && ((!data.exists() && newData.val() === auth.uid) || (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()))",
+          ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && ((!data.exists() && newData.val() === auth.uid) || (auth.token.firebase.sign_in_provider === 'github.com' && root.child('admins').child(auth.uid).exists()))",
           ".validate": "newData.isString()"
         },
 
         "modules": {
           "python": {
-            ".write": "auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+            ".validate": "newData.isBoolean()"
+          },
+          "partage": {
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
             ".validate": "newData.isBoolean()"
           },
           "$autre": { ".validate": false }
@@ -109,14 +157,14 @@
 
         "editeurs": {
           "$uid": {
-            ".write": "auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
             ".validate": "newData.val() === true"
           }
         },
 
         "participants": {
           "$uid": {
-            ".write": "auth != null && auth.uid === $uid && !root.child('bans').child(auth.uid).exists()",
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && auth.uid === $uid",
             ".validate": "newData.hasChildren(['pseudo', 'depuis'])",
             "pseudo": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 20" },
             "depuis": { ".validate": "newData.isNumber()" },
@@ -124,10 +172,52 @@
           }
         },
 
+        // Main levée : chacun lève ou baisse la sienne ; l'hôte peut baisser celle des autres.
+        "mains": {
+          "$uid": {
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && (auth.uid === $uid || (!newData.exists() && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))))",
+            ".validate": "newData.hasChildren(['pseudo', 'date'])",
+            "pseudo": { ".validate": "newData.isString() && newData.val().length <= 20" },
+            "date": { ".validate": "newData.val() === now" },
+            "$autre": { ".validate": false }
+          }
+        },
+
+        // Tchat : on ajoute ses propres messages ; l'hôte en supprime un ou vide tout.
+        "messages": {
+          ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && !newData.exists() && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+          "$id": {
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && ((!data.exists() && newData.child('par').val() === auth.uid) || (!newData.exists() && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))))",
+            ".validate": "newData.hasChildren(['par', 'pseudo', 'texte', 'date'])",
+            "par": { ".validate": "newData.val() === auth.uid" },
+            "pseudo": { ".validate": "newData.isString() && newData.val().length <= 20" },
+            "texte": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 500" },
+            "date": { ".validate": "newData.val() === now" },
+            "$autre": { ".validate": false }
+          }
+        },
+
+        // Partage d'écran demandé par l'hôte à un participant.
+        // Le droit réel de partager est donné par le serveur de visio (serveur/jetons) ;
+        // cette branche sert à prévenir le participant et à suivre sa réponse.
+        "partage": {
+          ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+          ".validate": "newData.hasChildren(['cible', 'statut', 'par', 'date'])",
+          "cible": { ".validate": "newData.isString()" },
+          "statut": {
+            // La personne visée répond (accepte / refuse) ou signale la fin de son partage.
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && data.parent().child('cible').val() === auth.uid && (newData.val() === 'accepte' || newData.val() === 'refuse' || newData.val() === 'fini')",
+            ".validate": "newData.val() === 'demande' || newData.val() === 'accepte' || newData.val() === 'refuse' || newData.val() === 'fini'"
+          },
+          "par": { ".validate": "newData.val() === auth.uid || newData.val() === data.val()" },
+          "date": { ".validate": "newData.isNumber()" },
+          "$autre": { ".validate": false }
+        },
+
         "python": {
           "code": {
             // Pouvoirs d'hôte, ou autorisé par l'hôte (editeurs/{uid} == true).
-            ".write": "auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('salons').child($salon).child('editeurs').child(auth.uid).val() === true || root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && (root.child('salons').child($salon).child('editeurs').child(auth.uid).val() === true || (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists()))))",
             ".validate": "newData.hasChildren(['texte', 'v', 'par'])",
             "texte": { ".validate": "newData.isString() && newData.val().length <= 20000" },
             // Numéro de version : +1 à chaque écriture, ce qui interdit d'écraser
@@ -139,7 +229,7 @@
           },
 
           "sortie": {
-            ".write": "auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('salons').child($salon).child('editeurs').child(auth.uid).val() === true || root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+            ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && (root.child('salons').child($salon).child('editeurs').child(auth.uid).val() === true || (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists()))))",
             ".validate": "newData.hasChildren(['texte', 'etat', 'par', 'pseudo', 'date'])",
             "texte": { ".validate": "newData.isString() && newData.val().length <= 20000" },
             "erreur": { ".validate": "newData.isString() && newData.val().length <= 5000" },
@@ -153,7 +243,7 @@
 
           "curseurs": {
             "$uid": {
-              ".write": "auth != null && auth.uid === $uid && !root.child('bans').child(auth.uid).exists() && (!newData.exists() || root.child('salons').child($salon).child('editeurs').child(auth.uid).val() === true || root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))",
+              ".write": "(auth != null && !root.child('bans').child(auth.uid).exists() && (root.child('utilisateurs').child(auth.uid).child('statut').val() === 'actif' || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists())))) && auth.uid === $uid && (!newData.exists() || root.child('salons').child($salon).child('editeurs').child(auth.uid).val() === true || (root.child('salons').child($salon).child('hote').val() === auth.uid || (auth.token.firebase.sign_in_provider === 'github.com' && (root.child('admins').child(auth.uid).exists() || root.child('profs').child(auth.uid).exists()))))",
               ".validate": "newData.hasChildren(['l', 'c', 'pseudo'])",
               "l": { ".validate": "newData.isNumber()" },
               "c": { ".validate": "newData.isNumber()" },

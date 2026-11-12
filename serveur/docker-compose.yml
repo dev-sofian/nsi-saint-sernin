@@ -1,0 +1,96 @@
+# Serveur de visio auto-hébergé de NSI St Sernin (PC de Sofian, EndeavourOS).
+# Guide complet : docs/SERVEUR.md. Ne pas lancer à la main : utiliser les scripts
+#   sudo ./demarrer.sh   → en ligne (Internet)      sudo ./demo.sh  → démo locale
+#   sudo ./arreter.sh    → coupe tout (interrupteur d'urgence)
+#
+# Sécurité :
+# - tous les services utilisent le réseau de la machine (network_mode: host) : le pare-feu
+#   ufw s'applique donc normalement (avec les ports « publiés » de Docker, il serait contourné) ;
+# - aucun conteneur n'a accès au dossier personnel : seulement ses fichiers de config (lecture
+#   seule) et serveur/data/ (certificats HTTPS) ;
+# - droits Linux retirés (cap_drop: ALL), pas d'élévation possible (no-new-privileges),
+#   système de fichiers en lecture seule ;
+# - versions d'images épinglées : on met à jour volontairement (docs/SERVEUR.md, « Mises à jour »).
+
+name: nsi-classe
+
+x-securite: &securite
+  restart: unless-stopped
+  network_mode: host
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp"]
+
+services:
+  # Délivre les jetons d'entrée dans les salles (vérifie compte, liste blanche, ban, rôle).
+  # Écoute seulement sur 127.0.0.1:8090 : jamais joignable directement depuis Internet.
+  jetons:
+    <<: *securite
+    image: node:22.23-alpine
+    user: "1000:1000"
+    working_dir: /app
+    command: ["node", "serveur.mjs"]
+    volumes:
+      - ./jetons:/app:ro
+    environment:
+      LIVEKIT_CLE: ${LIVEKIT_CLE:?lancer ./initialiser.sh}
+      LIVEKIT_SECRET: ${LIVEKIT_SECRET:?lancer ./initialiser.sh}
+      DOMAINE: ${DOMAINE:-localhost}
+      FIREBASE_PROJET: ${FIREBASE_PROJET}
+      FIREBASE_BDD: ${FIREBASE_BDD}
+      ORIGINES: ${ORIGINES}
+
+  # Visio (audio, vidéo, partage d'écran). Ports : 7880 (local, derrière Caddy),
+  # 7881/tcp et 7882/udp (média, ouverts sur Internet).
+  livekit:
+    <<: *securite
+    profiles: ["en-ligne"]
+    image: livekit/livekit-server:v1.13.11
+    user: "65534:65534"
+    command: ["--config", "/etc/livekit.yaml"]
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_CLE}: ${LIVEKIT_SECRET}"
+
+  # Même chose pour la démo locale (vidéoprojecteur), sans adresse publique.
+  livekit-demo:
+    <<: *securite
+    profiles: ["demo"]
+    image: livekit/livekit-server:v1.13.11
+    user: "65534:65534"
+    command: ["--config", "/etc/livekit.yaml"]
+    volumes:
+      - ./livekit-demo.yaml:/etc/livekit.yaml:ro
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_CLE}: ${LIVEKIT_SECRET}"
+
+  # Porte d'entrée HTTPS (ports 80 et 443) : certificat Let's Encrypt automatique,
+  # envoie /api/* au service jetons et /rtc* à LiveKit, refuse tout le reste.
+  caddy:
+    <<: *securite
+    profiles: ["en-ligne"]
+    image: caddy:2.10.2-alpine
+    cap_add: [NET_BIND_SERVICE]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data/caddy:/data
+      - ./data/caddy-config:/config
+    environment:
+      DOMAINE: ${DOMAINE:-}
+
+  # Met à jour l'adresse IP de la box chez DuckDNS toutes les 5 minutes.
+  duckdns:
+    profiles: ["en-ligne"]
+    image: curlimages/curl:8.11.1
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - 'while true; do curl -fsS -o /dev/null "https://www.duckdns.org/update?domains=$${DUCKDNS_SOUS_DOMAINE}&token=$${DUCKDNS_JETON}&ip=" && echo "DuckDNS : IP à jour" || echo "DuckDNS : échec"; sleep 300; done'
+    environment:
+      DUCKDNS_SOUS_DOMAINE: ${DUCKDNS_SOUS_DOMAINE:-}
+      DUCKDNS_JETON: ${DUCKDNS_JETON:-}
