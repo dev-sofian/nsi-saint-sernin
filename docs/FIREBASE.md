@@ -3,8 +3,10 @@
 Ce guide est pour les **administrateurs** (Sofian E. et Vianney M.).
 
 Le site utilise deux services Firebase :
-- **Authentication** : les comptes (élèves en anonyme, profs et admins avec GitHub) ;
-- **Realtime Database** : les rôles, les bans, les profils et les salles (Python partagé en temps réel).
+- **Authentication** : les comptes (élèves avec nom d'utilisateur + mot de passe, profs et admins avec GitHub) ;
+- **Realtime Database** : les rôles, la liste blanche, les bans, les profils et les salles (Python partagé, tchat, mains levées, demandes de partage d'écran).
+
+La vidéo et le partage d'écran passent par le serveur auto-hébergé : voir `docs/SERVEUR.md`.
 
 > **Pourquoi pas Firestore ?** Firestore facture une lecture à chaque personne qui reçoit une
 > modification. Avec une classe qui regarde quelqu'un taper du code, on dépasserait le quota
@@ -13,7 +15,7 @@ Le site utilise deux services Firebase :
 > déconnexions (liste des présents). Si vous aviez créé une base Firestore, vous pouvez la
 > supprimer ou la laisser : le site ne s'en sert plus.
 
-Tant que la configuration n'est pas complète, le site fonctionne sans comptes (visio seule).
+Tant que la configuration n'est pas complète, le site fonctionne sans comptes (cours et Python solo seulement).
 
 ## 1. Créer le projet ✅ (déjà fait : `nsi-saint-sernin`)
 
@@ -29,9 +31,19 @@ Ces valeurs ne sont **pas secrètes** : elles sont visibles par tout visiteur, c
 
 Console Firebase → **Authentication** → onglet **Sign-in method** :
 
-### Anonyme (élèves)
+### Adresse e-mail / mot de passe (élèves)
 
-**Anonyme** → Activer → Enregistrer.
+**Adresse e-mail/Mot de passe** → Activer (première option seulement, **pas** « Lien envoyé par
+e-mail ») → Enregistrer.
+
+Les élèves ne donnent **aucune adresse e-mail** : le site transforme leur nom d'utilisateur en une
+adresse technique `nom@nsi-saint-sernin.firebaseapp.com` qui ne reçoit jamais de courrier (c'est
+pour ça que Firebase affiche des « adresses » dans l'onglet Users).
+
+### Anonyme : à désactiver
+
+Si **Anonyme** est activé (ancienne version du site), le **désactiver** : les élèves n'entrent plus
+sans compte. Les anciens comptes anonymes n'ont plus accès aux salles (ils ne sont pas validés).
 
 ### GitHub (admins et profs)
 
@@ -66,8 +78,12 @@ Authentication → **Settings** → **Authorized domains** → ajouter :
 5. Onglet **Règles** : remplacer tout le contenu par celui du fichier
    [`database.rules.json`](../database.rules.json) du dépôt, puis **Publier**.
 
-À chaque modification de `database.rules.json` dans le dépôt, il faut la republier ici, ou utiliser
+À chaque modification des règles, il faut les republier ici, ou utiliser
 `firebase deploy --only database` si Firebase CLI est installé.
+
+> `database.rules.json` est **généré** : on modifie `outils/regles.template.jsonc`, puis
+> `node outils/generer-regles.mjs` (les conditions répétées partout, comme « est admin » ou
+> « est membre validé », n'y sont écrites qu'une fois).
 
 ## 6. Se déclarer administrateur
 
@@ -95,8 +111,8 @@ C'est voulu : personne ne peut se donner ces droits en trichant dans le navigate
    - `ajoutePar` : votre propre UID
    - `date` : `0` (ou n'importe quel nombre ; la console n'applique pas les règles)
 
-Un prof a les pouvoirs d'hôte dans toutes les salles. Une page d'administration pour faire ça
-depuis le site arrivera en phase 4.
+Un prof a les pouvoirs d'hôte dans toutes les salles. (Ajouter un prof depuis la page Admin est
+prévu dans `TODO.md`.)
 
 ## 8. (Conseillé) Restreindre la clé d'API
 
@@ -105,18 +121,26 @@ La clé `apiKey` est publique, mais on peut limiter les sites qui ont le droit d
 « Browser key » → **Restrictions relatives aux applications** → *Sites web* → ajouter l'adresse du
 site (ex : `https://dev-sofian.github.io/*`), `http://127.0.0.1:5500/*` et `http://localhost:5500/*`.
 
-## Bannir quelqu'un (en attendant la page Admin)
+## Liste blanche, bans, mot de passe oublié : la page Admin
 
-Console → Realtime Database → Données → branche `bans` → **+** : Clé = l'UID de la personne
-(visible dans `salons/<salle>/participants`), puis à l'intérieur `pseudo`, `motif`,
-`auteurUid` (votre UID) et `date` (`0`). Pour lever le ban, supprimer cette entrée.
+Tout se fait depuis la page **Admin** du site (lien dans la barre du haut quand on est connecté
+en admin) :
 
-Un banni ne peut plus lire ni écrire dans les salles, ni modifier son profil.
+- **Demandes d'accès** : un élève crée son compte, le site lui affiche un code (ex : `K7Q-M4P`). Il
+  le recopie sur un papier avec son nom d'utilisateur (ou dans le formulaire Google). Recopier le code
+  dans la ligne de sa demande : **Valider** ne s'active que si le code correspond.
+- **Comptes** : suspendre, valider sans code, bannir, débannir, supprimer.
+- **Salles** : voir qui est présent, fermer une salle.
+- **Journal** : toutes les actions de modération, non modifiables.
 
-Limite connue : un élève connecté en **anonyme** peut contourner un ban en se déconnectant ou en
-effaçant les données de son navigateur, car il obtient alors un nouveau compte. Pour des bans
-vraiment fiables, il faudra des comptes Google ou une salle d'attente validée par l'hôte
-(voir `TODO.md`).
+**Mot de passe oublié** : personne (même un admin) ne peut lire ni changer le mot de passe d'un élève.
+1. Page Admin → **Supprimer** son compte.
+2. Console Firebase → **Authentication → Users** → chercher `nom@nsi-saint-sernin.firebaseapp.com`
+   → **Supprimer le compte** (sinon le nom d'utilisateur reste pris).
+3. L'élève recrée son compte avec le même nom et refait valider son code.
+
+Un banni ne peut plus entrer dans les salles ni modifier son profil, et le serveur de visio refuse
+de lui donner un jeton. S'il est en visio au moment du ban, la page Admin le sort de la salle.
 
 ## Limites de l'offre gratuite (Spark)
 

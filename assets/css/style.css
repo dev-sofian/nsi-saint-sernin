@@ -171,16 +171,90 @@ input[type="text"], input[type="search"] {
 }
 .console .err { color: #ff8787; }
 
-/* Visio */
-.container.large { max-width: none; }
-.jitsi {
-  height: calc(100vh - 180px);
-  min-height: 360px;
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--surface);
+/* Boutons : variantes */
+.btn-petit { padding: 3px 8px; font-size: .8rem; }
+.btn.actif { border-color: var(--accent); color: var(--accent); }
+.badge-attente { border-color: #e8890c; color: #e8890c; }
+.badge-main { border-color: #e8890c; }
+
+/* Connexion : onglets, encart du code */
+.onglets { display: flex; gap: 4px; margin-bottom: 4px; }
+.onglet {
+  padding: 6px 12px;
   border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
 }
+.onglet.actif { color: var(--text); border-color: var(--accent); }
+.formulaire input[type="password"] {
+  flex: 1; min-width: 160px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.formulaire input { width: 100%; }
+.formulaire .aide { width: 100%; margin-top: -4px; }
+.encart { padding: 12px 14px; border: 1px solid var(--accent); border-radius: 8px; margin: 12px 0; }
+.encart h3 { margin-top: 0; }
+.code-verif { font: 700 1.6rem/1.2 ui-monospace, monospace; letter-spacing: .12em; }
+
+/* Administration */
+.liste-admin { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.liste-admin p { margin: 2px 0; }
+.ligne-admin { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; }
+.ligne-infos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ligne-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.champ-code { width: 9em; font-family: ui-monospace, monospace; text-transform: uppercase; }
+.champ-code.code-ok { border-color: #2f9e44; }
+#filtre-comptes { width: 100%; }
+
+/* Salle de visio */
+.container.large { max-width: none; }
+.salle-barre .espace { flex: 1; }
+.salle-corps { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 12px; min-height: calc(100vh - 200px); }
+.salle-corps > * { min-width: 0; }
+.scene { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.scene-ecran { position: relative; background: #000; border-radius: 10px; overflow: hidden; }
+.scene-ecran video { display: block; width: 100%; max-height: 62vh; object-fit: contain; }
+.scene-ecran-barre { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; background: var(--surface); font-size: .9rem; }
+.scene-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; align-content: start; flex: 1; }
+.tuile { position: relative; aspect-ratio: 16 / 9; background: var(--console-bg); border: 2px solid transparent; border-radius: 10px; overflow: hidden; }
+.tuile.parle { border-color: #2f9e44; }
+.tuile video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tuile-moi video { transform: scaleX(-1); } /* sa propre caméra en miroir, comme une glace */
+.tuile-initiales { position: absolute; inset: 0; display: grid; place-items: center; font: 600 2rem/1 system-ui, sans-serif; color: #c9cfe0; }
+.tuile-legende { position: absolute; left: 6px; right: 6px; bottom: 6px; display: flex; gap: 6px; align-items: center; font-size: .8rem; color: #fff; }
+.tuile-nom, .tuile-icone { padding: 1px 6px; border-radius: 4px; background: rgba(0, 0, 0, .6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tuile-icone { font-size: .72rem; }
+.tuile[data-role="hote"] .tuile-nom::after, .tuile[data-role="prof"] .tuile-nom::after, .tuile[data-role="admin"] .tuile-nom::after { content: " ★"; }
+.controles { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+
+.salle-cote { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.bloc-cote { padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.bloc-cote h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 1rem; }
+.bloc-cote h2 .btn { margin-left: auto; }
+.liste-participants { display: flex; flex-direction: column; gap: 4px; max-height: 32vh; overflow: auto; }
+.ligne-participant-salle { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.participant-nom { font-weight: 600; overflow-wrap: anywhere; }
+.participant-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+.bloc-tchat { flex: 1; display: flex; flex-direction: column; min-height: 260px; }
+.tchat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; max-height: 45vh; }
+.message-tchat { padding: 6px 8px; border-radius: 8px; background: var(--bg); }
+.message-moi { border-left: 3px solid var(--accent); }
+.message-entete { display: flex; align-items: center; gap: 8px; }
+.message-suppr { margin-left: auto; }
+.message-texte { white-space: pre-wrap; overflow-wrap: anywhere; }
+.form-tchat { display: flex; gap: 6px; margin-top: 8px; }
+.form-tchat input { flex: 1; min-width: 0; }
+
+.dialogue { max-width: 420px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); }
+.dialogue::backdrop { background: rgba(0, 0, 0, .5); }
 
 /* Fenêtres flottantes (assets/js/fenetre.js) */
 .fenetre {
@@ -229,8 +303,8 @@ input[type="text"], input[type="search"] {
   background: linear-gradient(135deg, transparent 50%, var(--border) 50%);
 }
 .fenetre.reduite .fenetre-corps, .fenetre.reduite .fenetre-poignee { display: none; }
-/* Pendant un glissement, la visio (iframe) ne capte plus la souris */
-body.fenetre-glisse iframe { pointer-events: none; }
+/* Pendant un glissement, les vidéos ne captent plus la souris */
+body.fenetre-glisse iframe, body.fenetre-glisse video { pointer-events: none; }
 body.fenetre-glisse { user-select: none; }
 
 /* Python partagé */
@@ -282,4 +356,7 @@ body.fenetre-glisse { user-select: none; }
   .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
   .ide { grid-template-columns: 1fr; }
   .CodeMirror, .console { height: 40vh; }
+  .salle-corps { grid-template-columns: minmax(0, 1fr); }
+  .scene-grille { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .tchat-messages { max-height: 40vh; }
 }

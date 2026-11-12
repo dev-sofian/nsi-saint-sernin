@@ -21,11 +21,25 @@
   </header>
 
   <main class="container large">
+    <p id="vue-chargement" class="muted">Chargement…</p>
+
+    <!-- Comptes pas activés sur ce site -->
+    <section id="visio-non-configure" class="panneau" hidden>
+      <h2>Salles bientôt disponibles</h2>
+      <p class="muted">Les comptes ne sont pas encore activés. Les cours et l'éditeur Python restent accessibles.</p>
+    </section>
+
     <!-- Pas connecté -->
     <section id="visio-connexion" class="panneau" hidden>
       <h2>Connecte-toi pour rejoindre une salle</h2>
-      <p class="muted">Les salles sont réservées aux élèves et profs connectés. Un simple pseudo suffit.</p>
-      <a class="btn primary" href="connexion.html?retour=visio.html">Se connecter</a>
+      <p class="muted">Les salles sont réservées aux élèves dont le compte a été validé, aux profs et aux admins. Sans compte, tu peux toujours lire les cours et utiliser l'éditeur Python.</p>
+      <a class="btn primary" href="connexion.html?retour=visio.html">Se connecter ou créer un compte</a>
+    </section>
+
+    <!-- Compte pas encore validé -->
+    <section id="visio-attente" class="panneau" hidden>
+      <h2>Ton compte attend sa validation</h2>
+      <p class="muted">Un administrateur doit valider ton compte avant que tu puisses rejoindre les salles. Ton code de vérification est sur la page <a href="connexion.html">Mon compte</a>.</p>
     </section>
 
     <!-- Banni -->
@@ -34,24 +48,73 @@
     </section>
 
     <form id="form-salle" class="toolbar" hidden>
-      <input type="text" id="pseudo" placeholder="Ton prénom" hidden>
       <input type="text" id="salle" placeholder="Nom de la salle (ex : nsi-terminale-b)" required>
       <button class="btn primary" type="submit">Rejoindre</button>
       <span id="visio-identite" class="muted"></span>
     </form>
+    <p id="avert-serveur" class="petit muted" hidden>Le serveur de visio n'est pas configuré : dans les salles, seuls le tchat et le Python partagé fonctionneront.</p>
 
-    <div id="barre-salle" class="toolbar" hidden>
-      <strong id="nom-salle"></strong>
-      <span id="role-salle" class="badge"></span>
-      <button id="btn-python" class="btn" type="button">Python</button>
-      <button id="btn-module-python" class="btn" type="button" hidden></button>
-      <a id="lien-externe" class="btn" target="_blank" rel="noopener">Visio dans un onglet</a>
-      <button id="btn-quitter" class="btn" type="button">Quitter la salle</button>
-      <span id="visio-message" class="muted"></span>
+    <p id="visio-message" class="message" role="status" hidden></p>
+
+    <!-- Salle -->
+    <div id="vue-salle" class="salle" hidden>
+      <div class="toolbar salle-barre">
+        <strong id="nom-salle"></strong>
+        <span id="role-salle" class="badge"></span>
+        <span id="etat-visio" class="petit muted"></span>
+        <span class="espace"></span>
+        <button id="btn-module-python" class="btn" type="button" hidden></button>
+        <button id="btn-module-partage" class="btn" type="button" hidden></button>
+        <button id="btn-quitter" class="btn" type="button">Quitter la salle</button>
+      </div>
+      <div class="salle-corps">
+        <section class="scene" aria-label="Visio">
+          <div id="scene-ecran" class="scene-ecran" hidden>
+            <video id="ecran-video" autoplay playsinline muted></video>
+            <div class="scene-ecran-barre">
+              <span id="ecran-legende"></span>
+              <button id="btn-arreter-partage" class="btn btn-petit" type="button" hidden>Arrêter ce partage</button>
+            </div>
+          </div>
+          <div id="scene-grille" class="scene-grille"></div>
+          <div class="controles">
+            <button id="btn-micro" class="btn" type="button" disabled>Activer le micro</button>
+            <button id="btn-camera" class="btn" type="button" disabled>Activer la caméra</button>
+            <button id="btn-ecran" class="btn" type="button" hidden>Partager mon écran</button>
+            <button id="btn-main" class="btn" type="button">✋ Lever la main</button>
+            <button id="btn-python" class="btn" type="button">Python</button>
+            <button id="btn-son" class="btn primary" type="button" hidden>Activer le son</button>
+          </div>
+        </section>
+
+        <aside class="salle-cote">
+          <section class="bloc-cote">
+            <h2>Participants <span id="nb-participants" class="badge"></span></h2>
+            <div id="liste-participants" class="liste-participants"></div>
+          </section>
+          <section class="bloc-cote bloc-tchat">
+            <h2>Tchat <button id="btn-vider-tchat" class="btn btn-petit" type="button" hidden>Vider</button></h2>
+            <div id="tchat-messages" class="tchat-messages" aria-live="polite"></div>
+            <form id="form-tchat" class="form-tchat">
+              <input type="text" id="tchat-texte" maxlength="500" placeholder="Écrire un message…" autocomplete="off" aria-label="Message">
+              <button class="btn" type="submit">Envoyer</button>
+            </form>
+          </section>
+        </aside>
+      </div>
     </div>
-
-    <div id="jitsi" class="jitsi"></div>
+    <div id="sons" hidden></div>
   </main>
+
+  <!-- Demande de partage d'écran reçue -->
+  <dialog id="dialogue-partage" class="dialogue">
+    <p><strong id="dialogue-qui"></strong> te demande de partager ton écran avec la salle.</p>
+    <p class="petit muted">Ton navigateur te laissera choisir quelle fenêtre ou quel écran montrer. Tu peux arrêter quand tu veux.</p>
+    <div class="toolbar">
+      <button id="btn-accepter-partage" class="btn primary" type="button">Choisir quoi partager</button>
+      <button id="btn-refuser-partage" class="btn" type="button">Refuser</button>
+    </div>
+  </dialog>
 
   <!-- Fenêtre flottante : Python partagé de la salle -->
   <section id="fenetre-python" class="fenetre" hidden aria-label="Python partagé">
@@ -92,6 +155,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.15.16/dist/livekit-client.umd.min.js"></script>
   <script type="module" src="assets/js/visio.js"></script>
   <script type="module" src="assets/js/compte.js"></script>
 </body>

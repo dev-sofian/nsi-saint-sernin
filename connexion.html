@@ -26,7 +26,7 @@
     <!-- Comptes pas encore activés -->
     <section id="vue-non-configure" class="panneau" hidden>
       <h2>Comptes bientôt disponibles</h2>
-      <p class="muted">La connexion n'est pas encore activée sur ce site. En attendant, les cours, l'éditeur Python et la visio restent accessibles sans compte.</p>
+      <p class="muted">La connexion n'est pas encore activée sur ce site. Les cours et l'éditeur Python restent accessibles sans compte.</p>
     </section>
 
     <p id="vue-chargement" class="muted">Chargement…</p>
@@ -35,13 +35,33 @@
     <div id="vue-deconnecte" class="grille-connexion" hidden>
       <section class="panneau">
         <h2>Élève</h2>
-        <p class="muted">Choisis juste un prénom ou un pseudo, sans compte ni adresse e-mail.</p>
-        <form id="form-anonyme" class="formulaire">
-          <label for="pseudo-anonyme">Prénom ou pseudo</label>
-          <input type="text" id="pseudo-anonyme" autocomplete="nickname" minlength="2" maxlength="20" required>
-          <button class="btn primary" type="submit">Entrer</button>
+        <div class="onglets" role="tablist">
+          <button type="button" class="onglet actif" role="tab" aria-selected="true" data-onglet="form-connexion">J'ai un compte</button>
+          <button type="button" class="onglet" role="tab" aria-selected="false" data-onglet="form-inscription">Créer un compte</button>
+        </div>
+
+        <form id="form-connexion" class="formulaire">
+          <label for="nom-connexion">Nom d'utilisateur</label>
+          <input type="text" id="nom-connexion" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+          <label for="mdp-connexion">Mot de passe</label>
+          <input type="password" id="mdp-connexion" autocomplete="current-password" required>
+          <button class="btn primary" type="submit">Se connecter</button>
         </form>
-        <p class="petit muted">Ton compte reste lié à ce navigateur. Si tu te déconnectes ou effaces les données du navigateur, tu repars avec un nouveau compte.</p>
+
+        <form id="form-inscription" class="formulaire" hidden>
+          <p class="petit muted">Ton compte devra être <strong>validé par un administrateur</strong> avant de pouvoir rejoindre les salles. Sans compte, tu as déjà accès aux cours et à l'éditeur Python.</p>
+          <label for="nom-inscription">Nom d'utilisateur</label>
+          <input type="text" id="nom-inscription" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="20" pattern="[a-z0-9_\-]{3,20}" required>
+          <span class="petit muted aide">3 à 20 caractères : minuscules sans accent, chiffres, _ ou -</span>
+          <label for="mdp-inscription">Mot de passe</label>
+          <input type="password" id="mdp-inscription" autocomplete="new-password" minlength="10" required>
+          <span class="petit muted aide">Au moins 10 caractères. Choisis-en un que tu n'utilises nulle part ailleurs.</span>
+          <label for="mdp2-inscription">Mot de passe (encore)</label>
+          <input type="password" id="mdp2-inscription" autocomplete="new-password" minlength="10" required>
+          <label for="classe-inscription">Classe (facultatif)</label>
+          <input type="text" id="classe-inscription" maxlength="20" placeholder="ex : TG2">
+          <button class="btn primary" type="submit">Créer mon compte</button>
+        </form>
       </section>
 
       <section class="panneau">
@@ -56,24 +76,57 @@
       <h2>Mon compte</h2>
       <dl class="infos">
         <dt>Pseudo</dt><dd id="info-pseudo"></dd>
+        <dt id="titre-nom">Nom d'utilisateur</dt><dd id="info-nom"></dd>
         <dt>Rôle</dt><dd id="info-role"></dd>
+        <dt>Accès aux salles</dt><dd id="info-statut"></dd>
         <dt>Connexion</dt><dd id="info-fournisseur"></dd>
       </dl>
 
+      <!-- Élève en attente de validation : le code à recopier -->
+      <div id="bloc-attente" class="encart" hidden>
+        <h3>Dernière étape : faire valider ton compte</h3>
+        <p>Recopie sur un papier ces deux informations et donne-le <strong>en main propre</strong> à Sofian E. ou Vianney M. :</p>
+        <dl class="infos code-demande">
+          <dt>Nom d'utilisateur</dt><dd id="attente-nom"></dd>
+          <dt>Code</dt><dd id="attente-code" class="code-verif"></dd>
+        </dl>
+        <p id="ligne-formulaire" hidden>Pas au lycée en ce moment ? Remplis plutôt <a id="lien-formulaire" target="_blank" rel="noopener">ce formulaire</a> avec les mêmes informations.</p>
+        <p class="petit"><strong>N'écris jamais ton mot de passe</strong> sur le papier ni dans le formulaire : personne n'en a besoin, pas même les admins.</p>
+        <p class="petit muted">Cette page se met à jour toute seule dès que ton compte est validé.</p>
+      </div>
+
+      <!-- Compte GitHub sans rôle -->
+      <div id="bloc-github-sans-role" class="encart" hidden>
+        <p>La connexion GitHub est réservée aux profs et aux administrateurs. Si tu es prof, envoie ton <strong>identifiant technique</strong> (plus bas) à un administrateur. Si tu es élève, déconnecte-toi et crée un compte élève.</p>
+      </div>
+
       <div id="bloc-banni" class="alerte" hidden>
-        <strong>Ton accès aux salons a été bloqué par un administrateur.</strong>
+        <strong>Ton accès aux salles a été bloqué par un administrateur.</strong>
         <p>Motif : <span id="info-motif"></span></p>
       </div>
 
       <form id="form-pseudo" class="formulaire">
-        <label for="nouveau-pseudo">Changer de pseudo</label>
+        <label for="nouveau-pseudo">Changer de pseudo (nom affiché dans les salles)</label>
         <input type="text" id="nouveau-pseudo" minlength="2" maxlength="20" required>
         <button class="btn" type="submit">Enregistrer</button>
       </form>
 
+      <details id="bloc-mdp" class="details-uid" hidden>
+        <summary>Changer de mot de passe</summary>
+        <form id="form-mdp" class="formulaire">
+          <label for="mdp-ancien">Mot de passe actuel</label>
+          <input type="password" id="mdp-ancien" autocomplete="current-password" required>
+          <label for="mdp-nouveau">Nouveau mot de passe</label>
+          <input type="password" id="mdp-nouveau" autocomplete="new-password" minlength="10" required>
+          <label for="mdp-nouveau2">Nouveau mot de passe (encore)</label>
+          <input type="password" id="mdp-nouveau2" autocomplete="new-password" minlength="10" required>
+          <button class="btn" type="submit">Changer</button>
+        </form>
+      </details>
+
       <details class="details-uid">
         <summary>Identifiant technique (pour les admins)</summary>
-        <p class="petit muted">Un administrateur peut te demander cet identifiant pour te donner le rôle de prof.</p>
+        <p class="petit muted">Un administrateur peut te demander cet identifiant (par exemple pour te donner le rôle de prof).</p>
         <code id="info-uid"></code>
         <button id="btn-copier-uid" class="btn" type="button">Copier</button>
       </details>

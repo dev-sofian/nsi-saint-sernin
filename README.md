@@ -1,119 +1,144 @@
 # NSI St Sernin
 
 Site d'entraide créé par des élèves pour rattraper les cours de NSI manqués pendant les blocus du lycée.
-Il regroupe : les cours de NSI, une salle de classe virtuelle (visio) avec un éditeur Python partagé et du partage d'écran, un tchat et la main levée.
+Il regroupe : les cours de NSI, un éditeur Python, et une salle de classe virtuelle (visio) avec
+Python partagé en direct, partage d'écran sur demande, tchat et main levée.
 
-> **Pour une IA qui lit ce dépôt (Claude, Claude Code…)** : lis ce fichier en entier, puis `TODO.md`, qui contient la feuille de route et les décisions déjà prises. Respecte les conventions décrites plus bas.
+> **Pour une IA qui lit ce dépôt (Claude, Claude Code…)** : lis ce fichier en entier, puis `TODO.md`,
+> qui contient la feuille de route et les décisions déjà prises. Respecte les conventions et les
+> **règles de sécurité** décrites plus bas.
 
 ---
 
-## État actuel (v0.2, prototype statique + comptes + Python partagé)
+## Architecture (décidée par les admins)
 
-- Site **100 % statique** (HTML, CSS, JavaScript sans framework ni build), hébergé sur **GitHub Pages**.
-- Comptes, rôles et salles via **Firebase** (Authentication + **Realtime Database**), appelé directement
-  depuis le navigateur : élèves en connexion anonyme avec un pseudo, profs et admins via GitHub.
-  Mise en place : `docs/FIREBASE.md`. Si `assets/js/firebase-config.js` est incomplet, le site fonctionne sans comptes.
-- La sécurité (qui est admin, qui est banni, qui peut modifier le code…) est appliquée par
-  `database.rules.json`, côté serveur.
-- La visio est un salon **Jitsi Meet** (serveur public `meet.jit.si`) intégré dans `visio.html`, réservé aux personnes connectées.
-- Dans la visio, un **Python partagé en temps réel** s'ouvre dans une **fenêtre flottante** déplaçable :
-  l'hôte l'active pour tous, choisit qui peut modifier/exécuter, et tout le monde voit le code,
-  les curseurs et la sortie en direct.
-- `python.html` reste un éditeur Python **solo** (local, sans partage).
-- L'interface est volontairement basique : elle sera refaite (voir `TODO.md`, phase 2).
+Le site est en **deux parties** :
+
+| Partie | Hébergement | Contenu |
+|---|---|---|
+| **Site + données** | **GitHub Pages** (statique) + **Firebase** (Authentication + Realtime Database) | Pages, cours, Python solo, comptes, liste blanche, rôles, bans, salles : Python partagé, tchat, mains levées, demandes de partage d'écran |
+| **Visio** | **Auto-hébergée sur le PC de Sofian** (EndeavourOS, Docker) : **LiveKit** + **Caddy** + service **jetons** | Audio, vidéo, partage d'écran |
+
+Si le PC est éteint, seules la vidéo et le partage d'écran sont indisponibles : le reste fonctionne.
+Mise en place : `docs/FIREBASE.md` (Firebase) et `docs/SERVEUR.md` (serveur de visio).
+
+### Accès
+
+| | Sans compte | Élève en attente | Élève validé | Prof | Admin |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Cours, Python solo | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Salles (visio, tchat, main levée, Python partagé) | | | ✔ | ✔ | ✔ |
+| Pouvoirs d'hôte dans toutes les salles | | | | ✔ | ✔ |
+| Liste blanche, bans, comptes, journal (page Admin) | | | | | ✔ |
+
+- **Élèves** : nom d'utilisateur + mot de passe. Le compte est créé **en attente** ; le site affiche
+  un **code de vérification**. L'élève donne **en main propre** à un admin un papier avec son nom
+  d'utilisateur + ce code (ou remplit le formulaire Google). L'admin recopie le code dans la page
+  Admin pour valider. **Le mot de passe n'est jamais écrit ni transmis**, même aux admins.
+- **Profs et admins** : connexion **GitHub** obligatoire. Admins : **Sofian E.** et **Vianney M.**
+- L'**hôte** d'une salle est la première personne qui y entre (ou un prof, ou un admin).
 
 ## Structure des fichiers
 
 ```
 nsi-saint-sernin/
-├── README.md            Ce fichier : présentation et conventions
-├── TODO.md              Feuille de route et spécifications détaillées
-├── index.html           Accueil (3 cartes : Cours, Python, Visio)
+├── README.md            Ce fichier
+├── TODO.md              Feuille de route et décisions
+├── CLAUDE.md            Consignes courtes pour Claude
+├── index.html           Accueil
 ├── cours.html           Liste + lecture des cours en Markdown
-├── python.html          Python solo : éditeur CodeMirror + exécution Pyodide (local)
-├── visio.html           Salle : visio Jitsi + fenêtre flottante « Python partagé »
-├── connexion.html       Connexion (élève anonyme / prof-admin GitHub), mon compte
-├── database.rules.json  Règles de sécurité de la Realtime Database (la vraie sécurité du site)
+├── python.html          Python solo (local, sans compte)
+├── visio.html           Salle de classe : visio + Python partagé + écran + tchat + main levée
+├── connexion.html       Connexion / création de compte / code de validation / mon compte
+├── admin.html           Administration (admins seulement)
+├── database.rules.json  Règles de sécurité Firebase — FICHIER GÉNÉRÉ, ne pas modifier à la main
 ├── firebase.json        Config Firebase CLI (publication des règles, émulateurs de test)
-├── .nojekyll            Empêche GitHub Pages de passer le site dans Jekyll
 ├── assets/
-│   ├── css/style.css    Style commun (thème clair/sombre automatique)
+│   ├── css/style.css
 │   └── js/
-│       ├── firebase-config.js  Config Firebase publique (incomplète = pas de comptes)
-│       ├── auth.js      Module partagé : connexion, déconnexion, pseudo, rôle (admin/prof/eleve), ban, accès au SDK
-│       ├── compte.js    Zone « compte » de la barre du haut + événement "nsi:compte"
-│       ├── connexion.js Page de connexion
-│       ├── cours.js     Charge cours/index.json, recherche, affiche le Markdown (marked)
-│       ├── python.js    Python solo : Pyodide, input() via prompt, ouvrir/télécharger .py, sauvegarde localStorage
-│       ├── visio.js     Page visio : compte requis, salon Jitsi (préfixe "nsi-st-sernin-"), barre de la salle
-│       ├── salle.js     Salle (salons/{nom}) : hôte, présence, droits de modification, modules activés
-│       ├── python-partage.js  Code synchronisé en temps réel, curseurs des autres, exécution et sortie partagées
-│       ├── executeur.js Pilote le worker Python : exécuter, arrêter, délai maximum (20 s)
-│       ├── python-worker.js   Pyodide dans un Web Worker ; input() lit le champ « Entrées »
-│       └── fenetre.js   Fenêtre flottante réutilisable : déplacer, redimensionner, réduire, fermer
-├── cours/
-│   ├── index.json       Catalogue : niveaux → chapitres {titre, theme, fichier}
-│   ├── premiere/*.md    Cours de Première
-│   └── terminale/*.md   Cours de Terminale
-├── docs/FIREBASE.md     Guide de mise en place Firebase (pour les admins)
-└── tests/               Tests des règles de sécurité (outil de dev, npm, pas utilisé par le site)
+│       ├── firebase-config.js  Config Firebase publique
+│       ├── site-config.js      Adresse du serveur de visio, lien du formulaire Google (à remplir)
+│       ├── auth.js         Comptes : inscription, connexion, statut (liste blanche), rôle, ban, accès au SDK
+│       ├── compte.js       Zone « compte » de la barre du haut + lien Admin + événement "nsi:compte"
+│       ├── connexion.js    Page de connexion
+│       ├── admin.js        Page Admin
+│       ├── moderation.js   Bannir + journal (partagé par admin.js et visio.js)
+│       ├── serveur.js      Appels au serveur de visio (avec le jeton d'identité Firebase)
+│       ├── visio.js        Page visio : orchestre tout ce qui suit
+│       ├── salle.js        État de la salle dans Firebase (présence, droits, modules, tchat, mains, demande d'écran)
+│       ├── visio-media.js  Audio / vidéo / écran avec LiveKit (vignettes, grand écran, son)
+│       ├── visio-panneau.js  Participants (actions de l'hôte) et tchat
+│       ├── python-partage.js Code synchronisé en temps réel, curseurs, exécution et sortie partagées
+│       ├── executeur.js / python-worker.js  Pyodide dans un Web Worker (arrêt possible, 20 s max)
+│       ├── fenetre.js      Fenêtre flottante réutilisable
+│       ├── cours.js / python.js  Pages Cours et Python solo
+├── cours/               Cours en Markdown + index.json
+├── docs/
+│   ├── FIREBASE.md      Mise en place Firebase (admins)
+│   └── SERVEUR.md       Héberger le serveur de visio (Sofian)
+├── outils/
+│   ├── regles.template.jsonc  Règles de sécurité à MODIFIER (avec marqueurs @ADMIN@, @OK@, @HOTE@…)
+│   └── generer-regles.mjs     Génère database.rules.json : node outils/generer-regles.mjs
+├── serveur/             Serveur de visio auto-hébergé (Docker)
+│   ├── docker-compose.yml  Caddy, LiveKit, jetons, DuckDNS
+│   ├── Caddyfile, livekit.yaml, livekit-demo.yaml
+│   ├── .env.exemple     Modèle ; le vrai .env (secrets) n'est JAMAIS commité
+│   ├── initialiser.sh / demarrer.sh / demo.sh / arreter.sh
+│   └── jetons/          Service maison, Node.js sans dépendance : jwt.mjs, app.mjs, serveur.mjs + tests
+└── tests/               Tests des règles Firebase (émulateur)
 ```
 
-## Comptes et rôles
+## Comment marche la salle
 
-| Rôle | Connexion | Comment on l'obtient |
-|---|---|---|
-| Élève | Anonyme + pseudo (Google prévu) | Par défaut |
-| Prof | GitHub | Un admin ajoute son UID dans `profs/` |
-| Admin | GitHub | UID ajouté à la main dans `admins/` (console Firebase uniquement) |
+- **Entrer** : la salle (Firebase) est rejointe, puis `serveur.js` demande un **jeton LiveKit** au
+  service jetons, qui vérifie le compte (signature Google), la liste blanche, le ban et le rôle.
+- **Vidéo** : caméras et micros coupés en entrant ; vignettes en basse définition (débit limité chez
+  l'hébergeur : environ 120 Mbit/s montants pour 15 personnes).
+- **Python partagé** : l'hôte l'active pour tous et coche qui peut modifier/exécuter ; code, curseurs
+  et sortie en direct (`python-partage.js`, inchangé).
+- **Partage d'écran** : l'hôte active le module, puis peut partager **son** écran ou cliquer
+  « Écran » à côté d'un participant. Le serveur donne alors à ce participant le droit LiveKit de
+  partager, et la demande est écrite dans la salle ; le participant voit « Choisir quoi partager /
+  Refuser » (le navigateur lui fait toujours choisir la fenêtre : on ne peut pas forcer un partage).
+  L'hôte peut arrêter à tout moment, ce qui retire le droit. Un seul écran affiché à la fois.
+- **Tchat, main levée** : Firebase. L'hôte peut supprimer un message, vider le tchat, baisser une main.
+- **Exclure** (hôte) : sort la personne de la visio, elle peut revenir. **Bannir** (admin) : bloque
+  le compte partout, immédiatement.
 
-Dans une page, pour connaître la personne connectée :
-
-```js
-import { ecouterCompte } from "./auth.js";
-ecouterCompte((compte) => {
-  // compte = null, ou { uid, pseudo, role: "admin" | "prof" | "eleve", banni, motifBan, anonyme, fournisseur }
-});
-```
-
-Les scripts classiques (non-modules) peuvent écouter l'événement `nsi:compte` envoyé par `compte.js` (`ev.detail` = compte).
-**Le rôle côté navigateur sert uniquement à l'affichage** : toute action protégée doit être vérifiée dans `database.rules.json`, avec un test dans `tests/regles.test.mjs`.
-
-## Python partagé : comment ça marche
-
-- **Code** (`salons/{nom}/python/code` = `{ texte, v, par, pseudo }`) : à chaque frappe (regroupées par 40 ms),
-  le navigateur envoie le texte dans une **transaction**. Si quelqu'un a modifié le code entre-temps, on
-  applique nos changements (calculés avec *diff-match-patch*) sur sa version au lieu de l'écraser :
-  plusieurs personnes peuvent taper en même temps. `v` augmente de 1 à chaque écriture (vérifié par les règles).
-- **Curseurs** (`python/curseurs/{uid}`) : position des personnes qui peuvent modifier, affichée en couleur avec leur pseudo.
-- **Exécution** : seule la personne qui clique exécute (Pyodide dans un **Web Worker**, arrêt possible,
-  20 s maximum) et publie la sortie dans `python/sortie` au fil de l'eau ; tout le monde voit la même chose.
-  `input()` lit les lignes du champ « Entrées ».
-- **Droits** : l'hôte (premier arrivé dans la salle), les admins et les profs peuvent modifier ; l'hôte
-  coche dans « Droits » qui d'autre peut modifier et exécuter (`editeurs/{uid}`).
-
-## Bibliothèques utilisées (chargées par CDN, pas de npm)
+## Bibliothèques (chargées par CDN, pas de npm côté site)
 
 | Bibliothèque | Version | Usage |
 |---|---|---|
-| CodeMirror | 5.65.16 (cdnjs) | Éditeur de code Python |
-| Pyodide | 0.26.4 (jsdelivr) | Python en WebAssembly dans le navigateur |
-| marked | dernière (jsdelivr) | Rendu Markdown des cours |
-| Firebase JS SDK | 10.14.1 (gstatic, modules ES) | Comptes (Auth) et base de données temps réel (Realtime Database) |
-| diff-match-patch | 20121119 (cdnjs) | Fusion des modifications simultanées du code partagé |
-| Jitsi Meet External API | `meet.jit.si/external_api.js` | Visio, partage d'écran, tchat |
+| Firebase JS SDK | 10.14.1 (gstatic, modules ES) | Comptes et base temps réel |
+| livekit-client | 2.15.16 (jsdelivr, UMD → `window.LivekitClient`) | Visio |
+| CodeMirror | 5.65.16 (cdnjs) | Éditeur de code |
+| Pyodide | 0.26.4 (jsdelivr) | Python dans le navigateur |
+| diff-match-patch | 20121119 (cdnjs) | Fusion des modifications du code partagé |
+| marked | (jsdelivr) | Rendu Markdown des cours |
 
-## Lancer le site en local
+Côté serveur (Docker, versions épinglées) : `livekit/livekit-server:v1.13.11`, `caddy:2.10.2-alpine`,
+`node:22.23-alpine`, `curlimages/curl:8.11.1`.
 
-1. Ouvrir le dossier dans VS Code.
-2. Installer l'extension **Live Server**.
-3. Clic droit sur `index.html` → **Open with Live Server**.
+## Lancer en local
 
-Ne pas ouvrir les HTML en double-cliquant : `fetch()` ne fonctionne pas en `file://`, la page Cours resterait vide.
+1. VS Code → extension **Live Server** → clic droit sur `index.html` → *Open with Live Server*.
+2. Pour la visio en local : `cd serveur && sudo ./demo.sh` (voir `docs/SERVEUR.md`). En local, le
+   site utilise automatiquement le serveur de démo (`http://localhost:8090`).
+
+Ne pas ouvrir les HTML en double-cliquant (`file://` : `fetch()` et les modules ne marchent pas).
+
+## Tests
+
+```bash
+node --test serveur/jetons/          # service jetons (aucune installation nécessaire)
+node outils/generer-regles.mjs --verifier   # database.rules.json à jour ?
+cd tests && npm install && npm test  # règles Firebase (Node 18+ et Java 11+, émulateur)
+```
 
 ## Mettre en ligne
 
-GitHub → **Settings → Pages → Branch : main / (root)**. Le site est servi à `https://<pseudo>.github.io/<repo>/`.
+GitHub → **Settings → Pages → Branch : main / (root)**. Après un changement des règles :
+`node outils/generer-regles.mjs`, puis les publier dans la console Firebase (`docs/FIREBASE.md`, étape 5).
 
 ## Ajouter un cours
 
@@ -123,32 +148,35 @@ GitHub → **Settings → Pages → Branch : main / (root)**. Le site est servi 
    { "titre": "Mon chapitre", "theme": "Données", "fichier": "premiere/03-mon-chapitre.md" }
    ```
 
-## Tester les règles de sécurité
-
-Il faut Node.js 18+ et Java 11+ (pour l'émulateur Firebase) :
-
-```bash
-cd tests && npm install && npm test
-```
-
 ## Conventions de code
 
-- **Langue** : interface, commentaires, noms de variables et de fonctions en **français** (`ouvrirCours`, `chargerPython`…). Les noms imposés par les bibliothèques restent en anglais.
-- **Pas de framework ni d'étape de build** tant que ce n'est pas décidé dans `TODO.md` : le site doit pouvoir être servi tel quel par GitHub Pages.
-- JavaScript moderne (ES2020+), pas de jQuery. Un fichier JS par page dans `assets/js/`.
-- Tout accès à `localStorage` est entouré d'un `try/catch` (peut être bloqué).
-- Le texte venant des utilisateurs (pseudo, tchat, code) est toujours inséré avec `textContent`, **jamais** `innerHTML`.
-- Aucune clé secrète dans le dépôt : il est public. Les clés de configuration Firebase (publiques par nature) sont acceptées, la sécurité repose sur les règles côté serveur.
-- Le site doit rester utilisable sur téléphone (largeur 360 px minimum).
+- **Langue** : interface, commentaires, noms de variables et de fonctions en **français**. Les noms imposés par les bibliothèques restent en anglais.
+- **Pas de framework ni d'étape de build** côté site : il doit pouvoir être servi tel quel par GitHub Pages.
+- JavaScript moderne (ES2020+), modules ES, pas de jQuery.
+- Service jetons : Node.js **sans dépendance npm** (seulement `node:crypto`, `node:http`), avec tests `node:test`.
+- Tout accès à `localStorage` est entouré d'un `try/catch`.
+- Le texte venant des utilisateurs (pseudo, tchat, code) est inséré avec `textContent`, **jamais** `innerHTML`.
+- Le site doit rester utilisable sur téléphone (360 px de large, sans défilement horizontal).
 
-## Public et vie privée
+## Règles de sécurité (non négociables)
 
-Les utilisateurs sont des **lycéens, souvent mineurs**. Conséquences :
-- collecter le minimum de données (prénom ou pseudo, rien d'autre pour les élèves) ;
-- les salons ne doivent pas être accessibles à n'importe qui sur Internet ;
-- les administrateurs doivent pouvoir exclure rapidement une personne malveillante.
+Le serveur de visio tourne sur le PC personnel d'un élève, dans le réseau de sa famille.
+
+1. **Aucun secret dans le dépôt** (il est public). Les clés Firebase de `firebase-config.js` sont
+   publiques par nature ; les vrais secrets (clés LiveKit, token DuckDNS, secret OAuth GitHub) vont
+   dans `serveur/.env` ou dans la console Firebase, jamais dans Git.
+2. Toute vérification de droit est faite **côté serveur** : `database.rules.json` (avec un test dans
+   `tests/regles.test.mjs`) et/ou le service jetons (avec un test dans `serveur/jetons/app.test.mjs`).
+   Cacher un bouton ne protège rien.
+3. On modifie `outils/regles.template.jsonc`, **jamais** `database.rules.json` directement.
+4. Mots de passe : gérés uniquement par Firebase Authentication ; jamais stockés, affichés,
+   journalisés, ni transmis sur papier ou formulaire.
+5. Serveur : seuls les ports **80, 443, 7881/tcp, 7882/udp** sont ouverts (box et ufw). Jamais de
+   DMZ, jamais de SSH exposé. Conteneurs sans droits, sans accès au dossier personnel.
+6. Données minimales : nom d'utilisateur, pseudo, classe (facultative). Les utilisateurs sont des
+   lycéens, souvent mineurs.
 
 ## Équipe
 
-- **Administrateurs** : Sofian E. et Vianney M.
+- **Administrateurs** : Sofian E. (héberge le serveur de visio) et Vianney M.
 - Projet ouvert aux contributions des élèves de la classe.

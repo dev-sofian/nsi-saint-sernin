@@ -1,0 +1,17 @@
+# LiveKit, mode « démo » : tout tourne sur le PC, sans Internet ni ports ouverts.
+# Sert à présenter le projet au vidéoprojecteur (le navigateur est sur la même machine).
+
+port: 7880
+
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  # Pas d'IP publique : on annonce seulement les adresses locales du PC.
+  use_external_ip: false
+
+room:
+  empty_timeout: 300
+  max_participants: 30
+
+logging:
+  level: info

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration — NSI St Sernin</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="index.html" class="logo">NSI St Sernin</a>
+    <nav>
+      <a href="index.html">Accueil</a>
+      <a href="cours.html">Cours</a>
+      <a href="python.html">Python</a>
+      <a href="visio.html">Visio</a>
+    </nav>
+    <div id="zone-compte" class="zone-compte"></div>
+  </header>
+
+  <main class="container">
+    <h1>Administration</h1>
+    <p id="message" class="message" role="status" hidden></p>
+
+    <section id="vue-refus" class="panneau" hidden>
+      <h2>Réservé aux administrateurs</h2>
+      <p class="muted">Connecte-toi avec le compte GitHub déclaré comme administrateur.</p>
+      <a class="btn primary" href="connexion.html?retour=admin.html">Se connecter</a>
+    </section>
+
+    <div id="vue-admin" hidden>
+      <section class="panneau">
+        <h2>Demandes d'accès <span id="nb-demandes" class="badge"></span></h2>
+        <p class="petit muted">Pour valider, recopie le code écrit sur le papier (ou dans le formulaire) : le bouton ne s'active que si le code correspond au compte. Un élève qui ne connaît pas le code n'a pas créé ce compte.</p>
+        <div id="liste-demandes" class="liste-admin"></div>
+      </section>
+
+      <section class="panneau">
+        <h2>Comptes</h2>
+        <input type="search" id="filtre-comptes" placeholder="Filtrer par pseudo ou nom d'utilisateur…">
+        <div id="liste-comptes" class="liste-admin"></div>
+        <p class="petit muted">« Supprimer » efface le compte du site. Pour que la personne puisse recréer un compte avec le <strong>même nom d'utilisateur</strong> (mot de passe oublié), supprime aussi l'utilisateur dans la console Firebase → Authentication (voir docs/FIREBASE.md).</p>
+      </section>
+
+      <section class="panneau">
+        <h2>Bannis</h2>
+        <div id="liste-bans" class="liste-admin"></div>
+      </section>
+
+      <section class="panneau">
+        <h2>Salles</h2>
+        <div id="liste-salles" class="liste-admin"></div>
+      </section>
+
+      <section class="panneau">
+        <h2>Journal de modération</h2>
+        <div id="liste-journal" class="liste-admin petit"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Projet d'élèves — code source sur GitHub.
+  </footer>
+
+  <script type="module" src="assets/js/compte.js"></script>
+  <script type="module" src="assets/js/admin.js"></script>
+</body>
+</html>

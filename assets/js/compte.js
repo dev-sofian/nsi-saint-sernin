@@ -1,5 +1,6 @@
 // Zone « compte » à droite de la barre du haut, présente sur toutes les pages.
-// Affiche « Se connecter » ou le pseudo + rôle + bouton de déconnexion.
+// Affiche « Se connecter » ou le pseudo + rôle + bouton de déconnexion
+// (+ lien « Admin » pour les administrateurs).
 // Prévient aussi la page avec l'événement "nsi:compte" (detail = compte ou null).
 
 import { ecouterCompte, seDeconnecter, firebaseConfigure, NOMS_ROLES } from "./auth.js";
@@ -29,9 +30,18 @@ function afficher(compte) {
   lienProfil.href = "connexion.html";
   lienProfil.title = "Mon compte";
 
-  const badge = compte.banni
-    ? element("span", "badge badge-banni", "Banni")
-    : element("span", `badge badge-${compte.role}`, NOMS_ROLES[compte.role]);
+  let badge;
+  if (compte.banni) badge = element("span", "badge badge-banni", "Banni");
+  else if (!compte.membre) badge = element("span", "badge badge-attente", "En attente");
+  else badge = element("span", `badge badge-${compte.role}`, NOMS_ROLES[compte.role]);
+
+  zone.append(lienProfil, badge);
+
+  if (compte.role === "admin") {
+    const admin = element("a", "btn", "Admin");
+    admin.href = "admin.html";
+    zone.append(admin);
+  }
 
   const btn = element("button", "btn", "Déconnexion");
   btn.type = "button";
@@ -39,8 +49,7 @@ function afficher(compte) {
     btn.disabled = true;
     try { await seDeconnecter(); } finally { btn.disabled = false; }
   });
-
-  zone.append(lienProfil, badge, btn);
+  zone.append(btn);
 }
 
 if (firebaseConfigure && zone) {
