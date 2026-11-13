@@ -1,16 +1,11 @@
 # NSI St Sernin
 
-Site d'entraide créé par des élèves pour rattraper les cours de NSI manqués pendant les blocus du lycée.
-Il regroupe : les cours de NSI, un éditeur Python, et une salle de classe virtuelle (visio) avec
+Le site regroupe : les cours de NSI, un éditeur Python, et une salle de classe virtuelle (visio) avec
 Python partagé en direct, partage d'écran sur demande, tchat et main levée.
-
-> **Pour une IA qui lit ce dépôt (Claude, Claude Code…)** : lis ce fichier en entier, puis `TODO.md`,
-> qui contient la feuille de route et les décisions déjà prises. Respecte les conventions et les
-> **règles de sécurité** décrites plus bas.
 
 ---
 
-## Architecture (décidée par les admins)
+## Architecture
 
 Le site est en **deux parties** :
 
@@ -32,10 +27,10 @@ Mise en place : `docs/FIREBASE.md` (Firebase) et `docs/SERVEUR.md` (serveur de v
 | Liste blanche, bans, comptes, journal (page Admin) | | | | | ✔ |
 
 - **Élèves** : nom d'utilisateur + mot de passe. Le compte est créé **en attente** ; le site affiche
-  un **code de vérification**. L'élève donne **en main propre** à un admin un papier avec son nom
-  d'utilisateur + ce code (ou remplit le formulaire Google). L'admin recopie le code dans la page
+  un **code de vérification**. L'élève donne **en main propre** à un admin son nom
+  d'utilisateur + ce code. L'admin recopie le code dans la page
   Admin pour valider. **Le mot de passe n'est jamais écrit ni transmis**, même aux admins.
-- **Profs et admins** : connexion **GitHub** obligatoire. Admins : **Sofian E.** et **Vianney M.**
+- **Profs et admins** : connexion **GitHub** obligatoire. Admins : **Sofian** 
 - L'**hôte** d'une salle est la première personne qui y entre (ou un prof, ou un admin).
 
 ## Structure des fichiers
@@ -183,8 +178,6 @@ sur fond sombre sont recolorés automatiquement.
 
 ## Règles de sécurité (non négociables)
 
-Le serveur de visio tourne sur le PC personnel d'un élève, dans le réseau de sa famille.
-
 1. **Aucun secret dans le dépôt** (il est public). Les clés Firebase de `firebase-config.js` sont
    publiques par nature ; les vrais secrets (clés LiveKit, token DuckDNS, secret OAuth GitHub) vont
    dans `serveur/.env` ou dans la console Firebase, jamais dans Git.
@@ -196,10 +189,9 @@ Le serveur de visio tourne sur le PC personnel d'un élève, dans le réseau de 
    journalisés, ni transmis sur papier ou formulaire.
 5. Serveur : seuls les ports **80, 443, 7881/tcp, 7882/udp** sont ouverts (box et ufw). Jamais de
    DMZ, jamais de SSH exposé. Conteneurs sans droits, sans accès au dossier personnel.
-6. Données minimales : nom d'utilisateur, pseudo, classe (facultative). Les utilisateurs sont des
-   lycéens, souvent mineurs.
+6. Données minimales : nom d'utilisateur, pseudo, classe (facultative). 
 
 ## Équipe
 
-- **Administrateurs** : Sofian E. (héberge le serveur de visio) et Vianney M.
-- Projet ouvert aux contributions des élèves de la classe.
+- **Administrateurs** : Sofian (héberge le serveur de visio)
+- Projet ouvert aux contributions.
