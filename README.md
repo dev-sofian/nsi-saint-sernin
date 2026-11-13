@@ -54,12 +54,15 @@ nsi-saint-sernin/
 ├── database.rules.json  Règles de sécurité Firebase — FICHIER GÉNÉRÉ, ne pas modifier à la main
 ├── firebase.json        Config Firebase CLI (publication des règles, émulateurs de test)
 ├── assets/
-│   ├── css/style.css
+│   ├── css/style.css      Thème « Abysses » (inspiré du rice Sway de Sofian)
+│   ├── img/abysses.svg    Fond d'écran original
 │   └── js/
 │       ├── firebase-config.js  Config Firebase publique
 │       ├── site-config.js      Adresse du serveur de visio, lien du formulaire Google (à remplir)
 │       ├── auth.js         Comptes : inscription, connexion, statut (liste blanche), rôle, ban, accès au SDK
-│       ├── compte.js       Zone « compte » de la barre du haut + lien Admin + événement "nsi:compte"
+│       ├── barre.js        Barre façon Waybar : espace actif, Alt+1…4, état du serveur de visio, horloge
+│       ├── accueil.js      Accueil : faux fastfetch, commandes du terminal, pluie de mots-clés Python
+│       ├── compte.js       Zone « compte » de la barre du haut + espace « admin » + événement "nsi:compte"
 │       ├── connexion.js    Page de connexion
 │       ├── admin.js        Page Admin
 │       ├── moderation.js   Bannir + journal (partagé par admin.js et visio.js)
