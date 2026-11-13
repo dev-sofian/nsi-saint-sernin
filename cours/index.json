@@ -32,6 +32,8 @@
             "titre": "Bac",
             "documents": [
               { "id": "exercices-bac", "titre": "TD3 : la POO au bac", "type": "notebook", "fichier": "terminale/poo/exercices-bac.ipynb" },
+              { "id": "bac-2023-ex3", "titre": "Bac 2023 Métropole jour 1, exercice 3 : régions et coloriage (sujet)", "type": "pdf", "fichier": "terminale/poo/bac-2023-metropole-j1-ex3.pdf" },
+              { "id": "bac-2023-corrige", "titre": "Bac 2023 Métropole jour 1 : corrigé (SQL, réseaux, POO)", "type": "pdf", "fichier": "terminale/poo/bac-2023-metropole-j1-corrige.pdf" },
               { "titre": "Épreuve pratique 2023, exercice 32.2 (jeu de cartes)", "type": "lien", "url": "https://glassus.github.io/terminale_nsi/T6_6_Epreuve_pratique/BNS_2023/#exercice-322" },
               { "titre": "Épreuve pratique 2023, exercice 37.2 (adresses IP)", "type": "lien", "url": "https://glassus.github.io/terminale_nsi/T6_6_Epreuve_pratique/BNS_2023/#exercice-372" }
             ]
@@ -57,6 +59,13 @@
             ]
           },
           {
+            "titre": "Bac",
+            "documents": [
+              { "id": "bac-2022-ex1", "titre": "Bac 2022 Polynésie jour 1, exercice 1 : récursivité (sujet)", "type": "pdf", "fichier": "terminale/recursivite/bac-2022-polynesie-j1-ex1.pdf" },
+              { "id": "bac-2022-corrige", "titre": "Bac 2022 Polynésie jour 1 : corrigé (récursivité, SQL, piles)", "type": "pdf", "fichier": "terminale/recursivite/bac-2022-polynesie-j1-corrige.pdf" }
+            ]
+          },
+          {
             "titre": "Entraînement (fiche du site)",
             "documents": [
               { "id": "exercices", "titre": "12 exercices, du facile au difficile", "type": "notebook", "fichier": "terminale/recursivite/exercices-recursivite.ipynb" }
@@ -72,6 +81,7 @@
           {
             "titre": "Cours",
             "documents": [
+              { "id": "memento", "titre": "Mémento des commandes Linux", "type": "pdf", "fichier": "terminale/linux/memento-linux.pdf" },
               { "titre": "La console Linux, sur le site du prof", "type": "lien", "url": "https://vianneymaletras.github.io/nsitermstsernin/amo/structlineaires/consolelinux.html" }
             ]
           },
@@ -106,7 +116,14 @@
         "id": "pile-file",
         "titre": "Pile et file",
         "theme": "Structures de données",
-        "parties": []
+        "parties": [
+          {
+            "titre": "Bac",
+            "documents": [
+              { "id": "bac-2022-corrige", "titre": "Bac 2022 Polynésie jour 1 : corrigé, exercice 4 sur les piles", "type": "pdf", "fichier": "terminale/recursivite/bac-2022-polynesie-j1-corrige.pdf" }
+            ]
+          }
+        ]
       },
       {
         "id": "arbres-binaires",
@@ -130,6 +147,12 @@
               { "id": "seance-7", "titre": "Séance 7 : données en tables", "type": "notebook", "fichier": "terminale/revisions/seance07-tables.ipynb", "annexes": ["terminale/revisions/eleves.csv"]},
               { "id": "seance-12", "titre": "Séance 12 : lire et commenter du code", "type": "notebook", "fichier": "terminale/revisions/seance12-lecture-code.ipynb" },
               { "id": "seance-12-corrige", "titre": "Séance 12 : corrigé", "type": "notebook", "fichier": "terminale/revisions/seance12-lecture-code-corrige.ipynb" }
+            ]
+          },
+          {
+            "titre": "Épreuve pratique",
+            "documents": [
+              { "id": "pratique-2026-13", "titre": "Épreuve pratique 2026, sujet 13 : ballon sonde (fichiers .csv et .py sur Pronote)", "type": "pdf", "fichier": "terminale/revisions/epreuve-pratique-2026-sujet13.pdf" }
             ]
           }
         ]

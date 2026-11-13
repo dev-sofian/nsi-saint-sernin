@@ -140,7 +140,7 @@ EndeavourOS + **Sway / SwayFX** (gestionnaire de fenêtres en **mosaïque**, Way
 - [x] Chapitres avec sous-parties : POO, Récursivité (+ diviser pour régner), Linux, Listes chaînées, Pile et file (vide), Arbres binaires (vide), Révisions des bases de Python.
 - [x] Lecture des notebooks .ipynb sur le site + « Ouvrir dans Basthon » + téléchargement ; PDF et liens externes.
 - [x] Fiches d'entraînement écrites pour le site (marquées « pas du prof ») : récursivité (12 exercices), listes chaînées (11, avec `Maillon`/`Liste` du cours), Linux (mémo + 8). Corrigés vérifiés en exécutant les tests.
-- [ ] Ajouter les sujets du bac (PDF).
+- [x] Sujets et corrigés du bac en PDF (2022 Polynésie, 2023 Métropole), mémento Linux, épreuve pratique 2026 sujet 13. Les fichiers .zip de l'épreuve pratique restent sur Pronote / le site du prof.
 - [ ] Remplir Pile et file, Arbres binaires.
 - [ ] ⚠ **décision** : les notebooks du prof sont publics (dépôt et site). Confirmer son accord, surtout pour le corrigé de la séance 12.
 - [x] **Décision (admins)** : les noms des admins n'apparaissent pas sur le site (accessible à tous).
