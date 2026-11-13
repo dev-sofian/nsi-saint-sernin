@@ -1,7 +1,5 @@
 # La récursivité
 
-*Exemple de cours : remplace-le par le contenu de ton prof.*
-
 Une fonction est **récursive** quand elle s'appelle elle-même.
 
 Il faut toujours :

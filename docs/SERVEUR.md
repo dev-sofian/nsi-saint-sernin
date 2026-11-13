@@ -150,7 +150,7 @@ sur le téléphone en 4G : seuls 80, 443 et 7881 (TCP) doivent être ouverts.
 
 Le service jetons n'a **aucun secret Firebase** : seulement les clés LiveKit.
 
-Tests du service (sans Docker ni réseau) : `node --test serveur/jetons/`.
+Tests du service (sans Docker ni réseau) : `node --test serveur/jetons/*.test.mjs`.
 
 ## Limites connues
 

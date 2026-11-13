@@ -33,10 +33,14 @@ afficherServeur(etatServeur);
 fetch("cours/index.json")
   .then((r) => r.json())
   .then((niveaux) => {
-    const total = niveaux.reduce((somme, n) => somme + n.chapitres.length, 0);
-    // Un seul niveau : « 1 (Terminale) » ; plusieurs : « 5 (Première 2, Terminale 3) »
-    const detail = niveaux.length === 1 ? niveaux[0].niveau : niveaux.map((n) => `${n.niveau} ${n.chapitres.length}`).join(", ");
-    remplir("ff-cours", `${total} (${detail})`);
+    const chapitres = niveaux.flatMap((n) => n.chapitres);
+    const docs = chapitres.reduce(
+      (somme, c) => somme + (c.parties ? c.parties.reduce((s, p) => s + p.documents.length, 0) : 1),
+      0
+    );
+    // « 7 chapitres, 24 documents (Terminale) »
+    const detail = niveaux.map((n) => n.niveau).join(", ");
+    remplir("ff-cours", `${chapitres.length} chapitres, ${docs} documents (${detail})`);
   })
   .catch(() => remplir("ff-cours", "indisponible", "ko"));
 

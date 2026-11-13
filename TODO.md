@@ -82,7 +82,7 @@ Architecture, accès et règles de sécurité : voir `README.md`.
 - [x] **Bloqueurs de publicité** (uBlock Origin a bloqué la visio pendant les tests) : encadré « Avant de rejoindre » avec une case obligatoire (mémorisée), détection d'un bloqueur par un élément-appât, et message précis si la visio échoue alors que le serveur répond.
 - [ ] Salle **verrouillée** par l'hôte / code de salle.
 - [ ] L'hôte peut **couper le micro** de quelqu'un (API LiveKit `MutePublishedTrack` via le service jetons).
-- [ ] Charger un exercice directement depuis les cours (bouton « Essayer ce code », phase 6).
+- [ ] Charger un exercice des cours dans le Python **partagé** d'une salle (le Python solo est fait, phase 6).
 - [ ] Limite : l'historique Ctrl+Z du Python partagé contient aussi les modifications des autres.
 
 ---
@@ -137,10 +137,15 @@ EndeavourOS + **Sway / SwayFX** (gestionnaire de fenêtres en **mosaïque**, Way
 ## Phase 6 — Cours et finitions
 
 - [x] **Décision (admins)** : seulement les cours de Terminale (exemples de Première retirés).
-- [ ] Ajouter les vrais cours de Terminale (avec l'accord du prof).
+- [x] Chapitres avec sous-parties : POO, Récursivité (+ diviser pour régner), Linux, Listes chaînées, Pile et file (vide), Arbres binaires (vide), Révisions des bases de Python.
+- [x] Lecture des notebooks .ipynb sur le site + « Ouvrir dans Basthon » + téléchargement ; PDF et liens externes.
+- [x] Fiches d'entraînement écrites pour le site (marquées « pas du prof ») : récursivité (12 exercices), listes chaînées (11, avec `Maillon`/`Liste` du cours), Linux (mémo + 8). Corrigés vérifiés en exécutant les tests.
+- [x] Sujets et corrigés du bac en PDF (2022 Polynésie, 2023 Métropole), mémento Linux, épreuve pratique 2026 sujet 13. Les fichiers .zip de l'épreuve pratique restent sur Pronote / le site du prof.
+- [ ] Remplir Pile et file, Arbres binaires.
+- [ ] ⚠ **décision** : les notebooks du prof sont publics (dépôt et site). Confirmer son accord, surtout pour le corrigé de la séance 12.
 - [x] **Décision (admins)** : les noms des admins n'apparaissent pas sur le site (accessible à tous).
-- [ ] Bouton « Essayer ce code » sur chaque bloc Python d'un cours.
-- [ ] Coloration syntaxique dans les cours.
+- [x] Bouton « Essayer ce code » sur chaque bloc Python d'un cours (ouvre l'éditeur, le code de l'élève reste récupérable).
+- [x] Coloration syntaxique dans les cours.
 - [ ] Page « À propos » : but du projet, contacts des admins, règles de bonne conduite, données collectées et leur suppression.
 - [ ] Tests sur Chrome, Firefox, Safari et sur le réseau du lycée (partage d'écran indisponible sur la plupart des téléphones).
 

@@ -3,9 +3,159 @@
     "niveau": "Terminale",
     "chapitres": [
       {
-        "titre": "La récursivité",
+        "id": "poo",
+        "titre": "Programmation orientée objet",
         "theme": "Programmation",
-        "fichier": "terminale/01-recursivite.md"
+        "parties": [
+          {
+            "titre": "Cours",
+            "documents": [
+              { "id": "principes", "titre": "Principes de la POO (classe inversée)", "type": "notebook", "fichier": "terminale/poo/principes-poo.ipynb" },
+              { "titre": "Principes de la POO, sur le site du prof", "type": "lien", "url": "https://vianneymaletras.github.io/nsitermstsernin/langageprog/poo/principespoo.html" }
+            ]
+          },
+          {
+            "titre": "Cahier d'autonomie",
+            "documents": [
+              { "id": "autonomie-1", "titre": "Cahier d'autonomie, partie 1", "type": "notebook", "fichier": "terminale/poo/cahier-autonomie-1.ipynb" },
+              { "id": "autonomie-2", "titre": "Cahier d'autonomie, partie 2", "type": "notebook", "fichier": "terminale/poo/cahier-autonomie-2.ipynb" }
+            ]
+          },
+          {
+            "titre": "Exercices",
+            "documents": [
+              { "id": "exercices", "titre": "Exercices POO", "type": "notebook", "fichier": "terminale/poo/exercices-poo.ipynb" },
+              { "id": "tp-banque", "titre": "TP modularité : la banque", "type": "notebook", "fichier": "terminale/poo/tp-banque.ipynb" }
+            ]
+          },
+          {
+            "titre": "Bac",
+            "documents": [
+              { "id": "exercices-bac", "titre": "TD3 : la POO au bac", "type": "notebook", "fichier": "terminale/poo/exercices-bac.ipynb" },
+              { "id": "bac-2023-ex3", "titre": "Bac 2023 Métropole jour 1, exercice 3 : régions et coloriage (sujet)", "type": "pdf", "fichier": "terminale/poo/bac-2023-metropole-j1-ex3.pdf" },
+              { "id": "bac-2023-corrige", "titre": "Bac 2023 Métropole jour 1 : corrigé (SQL, réseaux, POO)", "type": "pdf", "fichier": "terminale/poo/bac-2023-metropole-j1-corrige.pdf" },
+              { "titre": "Épreuve pratique 2023, exercice 32.2 (jeu de cartes)", "type": "lien", "url": "https://glassus.github.io/terminale_nsi/T6_6_Epreuve_pratique/BNS_2023/#exercice-322" },
+              { "titre": "Épreuve pratique 2023, exercice 37.2 (adresses IP)", "type": "lien", "url": "https://glassus.github.io/terminale_nsi/T6_6_Epreuve_pratique/BNS_2023/#exercice-372" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "recursivite",
+        "titre": "Récursivité",
+        "theme": "Programmation",
+        "parties": [
+          {
+            "titre": "Cours",
+            "documents": [
+              { "id": "fiche", "titre": "Fiche résumé", "type": "markdown", "fichier": "terminale/recursivite/premiere-approche.md" },
+              { "titre": "Première approche, sur le site du prof", "type": "lien", "url": "https://vianneymaletras.github.io/nsitermstsernin/langageprog/recursivite/premapproche.html" }
+            ]
+          },
+          {
+            "titre": "Diviser pour régner",
+            "documents": [
+              { "id": "diviser-pour-regner", "titre": "Diviser pour régner (cours complet)", "type": "notebook", "fichier": "terminale/recursivite/diviser-pour-regner.ipynb" }
+            ]
+          },
+          {
+            "titre": "Bac",
+            "documents": [
+              { "id": "bac-2022-ex1", "titre": "Bac 2022 Polynésie jour 1, exercice 1 : récursivité (sujet)", "type": "pdf", "fichier": "terminale/recursivite/bac-2022-polynesie-j1-ex1.pdf" },
+              { "id": "bac-2022-corrige", "titre": "Bac 2022 Polynésie jour 1 : corrigé (récursivité, SQL, piles)", "type": "pdf", "fichier": "terminale/recursivite/bac-2022-polynesie-j1-corrige.pdf" }
+            ]
+          },
+          {
+            "titre": "Entraînement (fiche du site)",
+            "documents": [
+              { "id": "exercices", "titre": "12 exercices, du facile au difficile", "type": "notebook", "fichier": "terminale/recursivite/exercices-recursivite.ipynb" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "linux",
+        "titre": "Linux",
+        "theme": "Systèmes",
+        "parties": [
+          {
+            "titre": "Cours",
+            "documents": [
+              { "id": "memento", "titre": "Mémento des commandes Linux", "type": "pdf", "fichier": "terminale/linux/memento-linux.pdf" },
+              { "titre": "La console Linux, sur le site du prof", "type": "lien", "url": "https://vianneymaletras.github.io/nsitermstsernin/amo/structlineaires/consolelinux.html" }
+            ]
+          },
+          {
+            "titre": "Entraînement (fiche du site)",
+            "documents": [
+              { "id": "exercices", "titre": "Mémo des commandes et 8 exercices", "type": "markdown", "fichier": "terminale/linux/exercices-linux.md" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "listes-chainees",
+        "titre": "Listes chaînées",
+        "theme": "Structures de données",
+        "parties": [
+          {
+            "titre": "Cours",
+            "documents": [
+              { "titre": "Listes chaînées, sur le site du prof", "type": "lien", "url": "https://vianneymaletras.github.io/nsitermstsernin/amo/structlineaires/listechainee.html" }
+            ]
+          },
+          {
+            "titre": "Entraînement (fiche du site)",
+            "documents": [
+              { "id": "exercices", "titre": "11 exercices avec Maillon et Liste", "type": "notebook", "fichier": "terminale/listes-chainees/exercices-listes-chainees.ipynb" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "pile-file",
+        "titre": "Pile et file",
+        "theme": "Structures de données",
+        "parties": [
+          {
+            "titre": "Bac",
+            "documents": [
+              { "id": "bac-2022-corrige", "titre": "Bac 2022 Polynésie jour 1 : corrigé, exercice 4 sur les piles", "type": "pdf", "fichier": "terminale/recursivite/bac-2022-polynesie-j1-corrige.pdf" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "arbres-binaires",
+        "titre": "Arbres binaires",
+        "theme": "Structures de données",
+        "parties": []
+      },
+      {
+        "id": "revisions",
+        "titre": "Révisions : bases de Python",
+        "theme": "Programmation",
+        "parties": [
+          {
+            "titre": "Séances",
+            "documents": [
+              { "id": "seance-1", "titre": "Séance 1 : variables, types, boucles", "type": "notebook", "fichier": "terminale/revisions/seance01-diagnostic.ipynb" },
+              { "id": "seance-2", "titre": "Séance 2 : du pseudo-code au Python", "type": "notebook", "fichier": "terminale/revisions/seance02-pseudo-code.ipynb" },
+              { "id": "seance-3", "titre": "Séance 3 : fonctions et décomposition", "type": "notebook", "fichier": "terminale/revisions/seance03-fonctions.ipynb" },
+              { "id": "seance-4", "titre": "Séance 4 : listes et recherche séquentielle", "type": "notebook", "fichier": "terminale/revisions/seance04-listes.ipynb" },
+              { "id": "seance-5", "titre": "Séance 5 : dichotomie et tri simple", "type": "notebook", "fichier": "terminale/revisions/seance05-dichotomie-tri.ipynb" },
+              { "id": "seance-7", "titre": "Séance 7 : données en tables", "type": "notebook", "fichier": "terminale/revisions/seance07-tables.ipynb", "annexes": ["terminale/revisions/eleves.csv"]},
+              { "id": "seance-12", "titre": "Séance 12 : lire et commenter du code", "type": "notebook", "fichier": "terminale/revisions/seance12-lecture-code.ipynb" },
+              { "id": "seance-12-corrige", "titre": "Séance 12 : corrigé", "type": "notebook", "fichier": "terminale/revisions/seance12-lecture-code-corrige.ipynb" }
+            ]
+          },
+          {
+            "titre": "Épreuve pratique",
+            "documents": [
+              { "id": "pratique-2026-13", "titre": "Épreuve pratique 2026, sujet 13 : ballon sonde (fichiers .csv et .py sur Pronote)", "type": "pdf", "fichier": "terminale/revisions/epreuve-pratique-2026-sujet13.pdf" }
+            ]
+          }
+        ]
       }
     ]
   }

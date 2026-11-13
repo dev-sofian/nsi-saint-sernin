@@ -27,16 +27,17 @@
 
   <main class="layout-cours">
     <aside class="sidebar">
-      <input type="search" id="recherche" placeholder="Rechercher un cours…">
+      <input type="search" id="recherche" placeholder="Rechercher un cours…" aria-label="Rechercher un cours">
       <div id="liste-cours">Chargement…</div>
     </aside>
     <article id="contenu-cours" class="contenu">
-      <p class="muted">Choisis un cours dans la liste.</p>
+      <p class="muted">Choisis un chapitre dans la liste.</p>
     </article>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="assets/js/cours.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.14/dist/purify.min.js"></script>
+  <script type="module" src="assets/js/cours.js"></script>
   <script type="module" src="assets/js/compte.js"></script>
   <script type="module" src="assets/js/barre.js"></script>
 </body>

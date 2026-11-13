@@ -26,6 +26,38 @@ try {
   if (sauvegarde) editeur.setValue(sauvegarde);
 } catch (e) { /* stockage indisponible : pas grave */ }
 
+// Code envoyé par le bouton « Essayer » de la page Cours (valable quelques minutes)
+const CLE_ESSAI = "nsi-python-essai";
+const CLE_PRECEDENT = "nsi-python-code-precedent";
+const btnMonCode = document.getElementById("btn-mon-code");
+
+function lireEssai() {
+  try {
+    const brut = localStorage.getItem(CLE_ESSAI);
+    if (!brut) return null;
+    localStorage.removeItem(CLE_ESSAI); // un seul usage : un rechargement ne réécrase pas le code
+    const { code, date } = JSON.parse(brut);
+    if (typeof code !== "string" || Date.now() - date > 5 * 60 * 1000) return null;
+    return code;
+  } catch (e) {
+    return null;
+  }
+}
+
+const essai = lireEssai();
+if (essai !== null && essai !== editeur.getValue()) {
+  // Le code de l'élève est mis de côté (et pas écrasé) : un bouton permet de le retrouver
+  try { localStorage.setItem(CLE_PRECEDENT, editeur.getValue()); } catch (e) {}
+  editeur.setValue(essai);
+  btnMonCode.hidden = false;
+}
+btnMonCode.addEventListener("click", () => {
+  let precedent = null;
+  try { precedent = localStorage.getItem(CLE_PRECEDENT); } catch (e) {}
+  if (precedent !== null) editeur.setValue(precedent);
+  btnMonCode.hidden = true;
+});
+
 editeur.on("change", () => {
   try { localStorage.setItem(CLE_SAUVEGARDE, editeur.getValue()); } catch (e) {}
 });
