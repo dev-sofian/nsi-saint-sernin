@@ -136,7 +136,9 @@ EndeavourOS + **Sway / SwayFX** (gestionnaire de fenêtres en **mosaïque**, Way
 
 ## Phase 6 — Cours et finitions
 
-- [ ] Ajouter les vrais cours de Première et Terminale (avec l'accord du prof).
+- [x] **Décision (admins)** : seulement les cours de Terminale (exemples de Première retirés).
+- [ ] Ajouter les vrais cours de Terminale (avec l'accord du prof).
+- [x] **Décision (admins)** : les noms des admins n'apparaissent pas sur le site (accessible à tous).
 - [ ] Bouton « Essayer ce code » sur chaque bloc Python d'un cours.
 - [ ] Coloration syntaxique dans les cours.
 - [ ] Page « À propos » : but du projet, contacts des admins, règles de bonne conduite, données collectées et leur suppression.

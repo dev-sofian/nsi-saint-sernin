@@ -145,10 +145,10 @@ GitHub → **Settings → Pages → Branch : main / (root)**. Après un changeme
 
 ## Ajouter un cours
 
-1. Écrire le cours en Markdown dans `cours/premiere/` ou `cours/terminale/` (nom : `NN-titre-en-minuscules.md`).
+1. Écrire le cours en Markdown dans `cours/terminale/` (nom : `NN-titre-en-minuscules.md`).
 2. Ajouter l'entrée dans `cours/index.json` :
    ```json
-   { "titre": "Mon chapitre", "theme": "Données", "fichier": "premiere/03-mon-chapitre.md" }
+   { "titre": "Mon chapitre", "theme": "Données", "fichier": "terminale/02-mon-chapitre.md" }
    ```
 
 ## Conventions de code

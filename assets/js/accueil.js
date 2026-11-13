@@ -24,7 +24,7 @@ document.addEventListener("nsi:compte", (ev) => {
 
 function afficherServeur(etat) {
   if (etat === "ok") remplir("ff-visio", "en ligne", "ok");
-  else if (etat === "eteint") remplir("ff-visio", "éteinte (allumée pendant les cours)", "attention");
+  else if (etat === "eteint") remplir("ff-visio", "éteinte", "attention");
   else if (etat === "absent") remplir("ff-visio", "pas encore configurée", "attention");
 }
 document.addEventListener("nsi:serveur", (ev) => afficherServeur(ev.detail));
@@ -33,8 +33,9 @@ afficherServeur(etatServeur);
 fetch("cours/index.json")
   .then((r) => r.json())
   .then((niveaux) => {
-    const detail = niveaux.map((n) => `${n.niveau} ${n.chapitres.length}`).join(", ");
     const total = niveaux.reduce((somme, n) => somme + n.chapitres.length, 0);
+    // Un seul niveau : « 1 (Terminale) » ; plusieurs : « 5 (Première 2, Terminale 3) »
+    const detail = niveaux.length === 1 ? niveaux[0].niveau : niveaux.map((n) => `${n.niveau} ${n.chapitres.length}`).join(", ");
     remplir("ff-cours", `${total} (${detail})`);
   })
   .catch(() => remplir("ff-cours", "indisponible", "ko"));
@@ -97,7 +98,7 @@ $("term-form").addEventListener("submit", (ev) => {
   entree.value = "";
 });
 
-ligne("Bienvenue. Cours, Python et salle de classe, au même endroit. Tape « aide » pour la liste des commandes.");
+ligne("Bienvenue. Tape « aide » pour la liste des commandes.");
 
 // ---------- Pluie de mots-clés Python (façon cmatrix) ----------
 
