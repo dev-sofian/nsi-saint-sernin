@@ -138,7 +138,7 @@ EndeavourOS + **Sway / SwayFX** (gestionnaire de fenêtres en **mosaïque**, Way
 
 - [x] **Décision (admins)** : seulement les cours de Terminale (exemples de Première retirés).
 - [x] Chapitres avec sous-parties : POO, Récursivité (+ diviser pour régner), Linux, Listes chaînées, Pile et file (vide), Arbres binaires (vide), Révisions des bases de Python.
-- [x] Lecture des notebooks .ipynb sur le site, fidèle à Jupyter (fond blanc, fichiers du prof non modifiés) + « Ouvrir dans Basthon » + téléchargement ; PDF et liens externes.
+- [x] Lecture des notebooks .ipynb sur le site + « Ouvrir dans Basthon » + téléchargement ; PDF et liens externes.
 - [ ] Ajouter les sujets du bac (PDF).
 - [ ] Remplir Pile et file, Arbres binaires.
 - [ ] ⚠ **décision** : les notebooks du prof sont publics (dépôt et site). Confirmer son accord, surtout pour le corrigé de la séance 12.

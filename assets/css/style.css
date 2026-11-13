@@ -320,47 +320,20 @@ input[type="checkbox"] { accent-color: var(--violet); width: 1.05em; height: 1.0
 .contenu summary { cursor: pointer; color: #a9bcff; }
 .contenu .katex { font-size: 1.05em; }
 
-/* Notebook : affiché comme dans Jupyter (fond blanc), pour garder les couleurs du prof */
-.contenu > div:has(> .notebook) { max-width: 980px; }
-.contenu .notebook {
-  padding: 24px 28px;
-  background: #fff;
-  color: #1f1f1f;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.6;
-  border: 1px solid var(--lisere-doux);
-}
-.contenu .notebook :is(h1, h2, h3, h4, h5, h6) { color: inherit; }
-.contenu .notebook a { color: #0b57d0; }
-.contenu .notebook code { color: inherit; font-family: var(--police); font-size: .92em; }
-.contenu .notebook :not(pre) > code { background: #f0f0f0; padding: 1px 4px; }
-.contenu .notebook pre {
-  background: #f7f7f7;
-  color: #1f1f1f;
-  border: 1px solid #e0e0e0;
-  border-left: 1px solid #e0e0e0;
-  font-family: var(--police);
-}
-.contenu .notebook :is(th, td) { border-color: #d0d0d0; }
-.contenu .notebook blockquote { margin-left: 0; padding-left: 14px; border-left: 3px solid #d0d0d0; color: #444; }
-.contenu .notebook details { border-color: #d0d0d0; }
-.contenu .notebook summary { color: inherit; }
-.contenu .notebook .image-absente { color: #777; }
-.contenu .notebook .btn { background: #fff; color: #1f1f1f; border-color: #c8c8c8; }
-.contenu .notebook .btn:hover { background: #ececec; color: #000; border-color: #999; }
+/* Cellules de notebook */
 .cellule { margin: 0 0 14px; }
 .cellule-md > :first-child { margin-top: 0; }
 .cellule-md > :last-child { margin-bottom: 0; }
-.cellule-vide pre { min-height: 2.6em; }
 .bloc-code { position: relative; margin: 12px 0; }
 .bloc-code pre { margin: 0; }
 .cellule-code .bloc-code { margin: 0; }
 .actions-code { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
-.sortie { margin: 0; padding: 6px 14px; white-space: pre-wrap; }
-.contenu .notebook .sortie { background: transparent; border: 0; }
-.sortie.err { color: #c62828; }
-.contenu .notebook .sortie.err { background: #fdecea; }
+.zone-reponse { padding: 8px 12px; border: 1px dashed var(--lisere-doux); color: var(--pale); font-size: .85rem; font-style: italic; }
+.sorties { border-left: 2px solid var(--jaune); margin-top: 4px; }
+.sortie { margin: 0; padding: 6px 14px; background: transparent; color: var(--texte); white-space: pre-wrap; border: 0; }
+.sortie.err { color: #ff8f8f; }
 .sortie-html { padding: 6px 14px; overflow-x: auto; }
+.contenu .sortie { border-left: 0; }
 
 /* Coloration Python (mêmes teintes que le rice) */
 .py-mot { color: #f0a6ff; }
@@ -369,13 +342,6 @@ input[type="checkbox"] { accent-color: var(--violet); width: 1.05em; height: 1.0
 .py-chaine { color: #e9e98a; }
 .py-nombre { color: #7fc4ff; }
 .py-com { color: var(--pale); font-style: italic; }
-/* Sur le fond blanc des notebooks : teintes proches de Jupyter */
-.contenu .notebook .py-mot { color: #008000; font-weight: 700; }
-.contenu .notebook .py-def { color: #0000ff; font-weight: 400; }
-.contenu .notebook .py-fonction { color: #008000; }
-.contenu .notebook .py-chaine { color: #ba2121; }
-.contenu .notebook .py-nombre { color: #080; }
-.contenu .notebook .py-com { color: #3d7b7b; }
 .contenu { padding: 24px 30px; line-height: 1.7; }
 .contenu > * { max-width: 76ch; }
 .contenu h1 { color: #fff; }
