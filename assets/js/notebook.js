@@ -1,7 +1,8 @@
 // Affichage d'un notebook Jupyter (.ipynb) et de Markdown, sans serveur.
-// Le .ipynb est du JSON : on transforme ses cellules en HTML, nettoyé par DOMPurify
-// (aucun script ni gestionnaire d'événement ne passe). Les maths ($…$) passent par KaTeX,
-// chargé seulement si le document en contient.
+// Le notebook est montré tel que le prof l'a écrit, sur fond blanc comme dans Jupyter :
+// aucune couleur ni aucun texte n'est modifié. Seul le HTML dangereux est retiré par DOMPurify
+// (scripts, gestionnaires d'événements, <style> qui changerait toute la page).
+// Les maths ($…$) passent par KaTeX, chargé seulement si le document en contient.
 
 const URL_KATEX = "https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/";
 
@@ -197,59 +198,6 @@ export function habillerBlocsMarkdown(racine) {
   }
 }
 
-// ---------- Lisibilité sur le thème sombre ----------
-
-function lireCouleur(texte) {
-  const m = texte.match(/rgba?\(([^)]+)\)/);
-  if (!m) return null;
-  const [r, g, b, a = 1] = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
-  return { r, g, b, a };
-}
-
-function luminance({ r, g, b }) {
-  const canal = (v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-  return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b);
-}
-
-function contraste(a, b) {
-  const [l1, l2] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (l1 + 0.05) / (l2 + 0.05);
-}
-
-const FOND_DU_THEME = { r: 17, g: 22, b: 58, a: 1 };
-
-function fondEffectif(element, racine) {
-  for (let el = element; el && el !== racine.parentElement; el = el.parentElement) {
-    const style = getComputedStyle(el);
-    const fond = lireCouleur(style.backgroundColor);
-    if (fond && fond.a > 0.5) return fond;
-    if (style.backgroundImage.includes("gradient")) {
-      // Dégradé : on prend la moyenne de ses couleurs
-      const couleurs = [...style.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((c) => lireCouleur(c[0]));
-      if (couleurs.length) {
-        const moyenne = (k) => couleurs.reduce((s, c) => s + c[k], 0) / couleurs.length;
-        return { r: moyenne("r"), g: moyenne("g"), b: moyenne("b"), a: 1 };
-      }
-    }
-  }
-  return FOND_DU_THEME;
-}
-
-// Les notebooks sont souvent écrits pour un fond blanc (texte noir, encadrés pâles).
-// Quand un texte devient illisible sur notre fond sombre, on change seulement sa couleur.
-export function corrigerContrastes(racine) {
-  for (const el of racine.querySelectorAll("*")) {
-    const aDuTexte = [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
-    if (!aDuTexte || el.closest("pre, .katex")) continue;
-    const texte = lireCouleur(getComputedStyle(el).color);
-    if (!texte) continue;
-    const fond = fondEffectif(el, racine);
-    if (contraste(texte, fond) < 4.5) {
-      el.style.color = luminance(fond) > 0.35 ? "#1a1540" : "#dfe3ff";
-    }
-  }
-}
-
 // ---------- Notebook ----------
 
 function sortiesDe(cellule) {
@@ -289,20 +237,18 @@ function sortiesDe(cellule) {
 
 function celluleCode(cellule) {
   const code = texteDe(cellule.source).replace(/\s+$/, "");
-  // Cellules « magiques » d'affichage (%%html…) : elles servent à la mise en page de Jupyter
-  if (/^\s*%%(html|javascript|js|capture|writefile)/.test(code)) return null;
-
   const div = document.createElement("div");
   div.className = "cellule cellule-code";
-  if (!code) {
-    div.classList.add("zone-reponse");
-    div.textContent = "À toi : écris ta réponse dans Basthon ou dans l'éditeur Python.";
-    return div;
-  }
   const pre = document.createElement("pre");
   pre.appendChild(document.createElement("code"));
   div.appendChild(pre);
-  habillerBlocPython(pre, code);
+  // Cellule vide (à compléter) ou commande Jupyter (%%html…) : affichée telle quelle, sans boutons
+  if (!code || /^\s*%/.test(code)) {
+    pre.firstChild.textContent = code;
+    if (!code) div.classList.add("cellule-vide");
+  } else {
+    habillerBlocPython(pre, code);
+  }
   const sorties = sortiesDe(cellule);
   if (sorties) div.appendChild(sorties);
   return div;
@@ -354,5 +300,4 @@ function finaliser(racine) {
     a.target = "_blank";
     a.rel = "noopener noreferrer";
   }
-  corrigerContrastes(racine);
 }

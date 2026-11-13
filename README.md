@@ -167,9 +167,10 @@ des **documents**. Tout est décrit dans `cours/index.json`.
 4. Vérifier avec Live Server : le notebook s'affiche, « Ouvrir dans Basthon » ne marche qu'une
    fois en ligne (Basthon doit pouvoir télécharger le fichier).
 
-Les notebooks sont affichés tels quels (cellules, sorties, images collées, formules). Le HTML
-qu'ils contiennent est nettoyé (pas de `<script>`, `<style>` ni `on…=`) et les textes illisibles
-sur fond sombre sont recolorés automatiquement.
+Les fichiers du prof ne sont **jamais modifiés** : ils sont copiés tels quels (seul le nom change).
+Le site les affiche comme Jupyter, sur fond blanc (cellules, sorties, images collées, formules),
+sans changer ni texte ni couleur. Seul le HTML dangereux est retiré à l'affichage
+(`<script>`, `<style>`, `on…=`). Les blocs Python reçoivent en plus des boutons « Essayer » et « Copier ».
 
 ## Conventions de code
 
