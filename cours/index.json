@@ -55,6 +55,12 @@
             "documents": [
               { "id": "diviser-pour-regner", "titre": "Diviser pour régner (cours complet)", "type": "notebook", "fichier": "terminale/recursivite/diviser-pour-regner.ipynb" }
             ]
+          },
+          {
+            "titre": "Entraînement (fiche du site)",
+            "documents": [
+              { "id": "exercices", "titre": "12 exercices, du facile au difficile", "type": "notebook", "fichier": "terminale/recursivite/exercices-recursivite.ipynb" }
+            ]
           }
         ]
       },
@@ -68,6 +74,12 @@
             "documents": [
               { "titre": "La console Linux, sur le site du prof", "type": "lien", "url": "https://vianneymaletras.github.io/nsitermstsernin/amo/structlineaires/consolelinux.html" }
             ]
+          },
+          {
+            "titre": "Entraînement (fiche du site)",
+            "documents": [
+              { "id": "exercices", "titre": "Mémo des commandes et 8 exercices", "type": "markdown", "fichier": "terminale/linux/exercices-linux.md" }
+            ]
           }
         ]
       },
@@ -80,6 +92,12 @@
             "titre": "Cours",
             "documents": [
               { "titre": "Listes chaînées, sur le site du prof", "type": "lien", "url": "https://vianneymaletras.github.io/nsitermstsernin/amo/structlineaires/listechainee.html" }
+            ]
+          },
+          {
+            "titre": "Entraînement (fiche du site)",
+            "documents": [
+              { "id": "exercices", "titre": "11 exercices avec Maillon et Liste", "type": "notebook", "fichier": "terminale/listes-chainees/exercices-listes-chainees.ipynb" }
             ]
           }
         ]
@@ -109,7 +127,7 @@
               { "id": "seance-3", "titre": "Séance 3 : fonctions et décomposition", "type": "notebook", "fichier": "terminale/revisions/seance03-fonctions.ipynb" },
               { "id": "seance-4", "titre": "Séance 4 : listes et recherche séquentielle", "type": "notebook", "fichier": "terminale/revisions/seance04-listes.ipynb" },
               { "id": "seance-5", "titre": "Séance 5 : dichotomie et tri simple", "type": "notebook", "fichier": "terminale/revisions/seance05-dichotomie-tri.ipynb" },
-              { "id": "seance-7", "titre": "Séance 7 : données en tables", "type": "notebook", "fichier": "terminale/revisions/seance07-tables.ipynb", "annexes": ["terminale/revisions/eleves.csv"] },
+              { "id": "seance-7", "titre": "Séance 7 : données en tables", "type": "notebook", "fichier": "terminale/revisions/seance07-tables.ipynb", "annexes": ["terminale/revisions/eleves.csv"]},
               { "id": "seance-12", "titre": "Séance 12 : lire et commenter du code", "type": "notebook", "fichier": "terminale/revisions/seance12-lecture-code.ipynb" },
               { "id": "seance-12-corrige", "titre": "Séance 12 : corrigé", "type": "notebook", "fichier": "terminale/revisions/seance12-lecture-code-corrige.ipynb" }
             ]
