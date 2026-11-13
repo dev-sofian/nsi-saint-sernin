@@ -6,18 +6,25 @@
   <title>Visio — NSI St Sernin</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <a href="index.html" class="logo">NSI St Sernin</a>
-    <nav>
-      <a href="index.html">Accueil</a>
-      <a href="cours.html">Cours</a>
-      <a href="python.html">Python</a>
-      <a href="visio.html" class="active">Visio</a>
+  <header class="barre">
+    <nav class="espaces" aria-label="Espaces de travail">
+      <a href="index.html" class="ws ws-accueil" title="Accueil">nsi</a>
+      <a href="cours.html" class="ws" data-raccourci="1" title="Cours (Alt+1)"><b>1</b><span>cours</span></a>
+      <a href="visio.html" class="ws" data-raccourci="2" title="Salle de classe (Alt+2)"><b>2</b><span>classe</span></a>
+      <a href="python.html" class="ws" data-raccourci="3" title="Python (Alt+3)"><b>3</b><span>python</span></a>
+      <a href="admin.html" class="ws ws-admin" data-raccourci="4" title="Administration (Alt+4)" hidden><b>4</b><span>admin</span></a>
     </nav>
-    <div id="zone-compte" class="zone-compte"></div>
+    <span id="etat-serveur" class="etat-serveur" role="img" aria-label="État du serveur de visio"></span>
+    <div class="barre-droite">
+      <div id="zone-compte" class="zone-compte"></div>
+      <time id="horloge" class="pastille horloge"></time>
+    </div>
   </header>
 
   <main class="container large">
@@ -45,6 +52,17 @@
     <!-- Banni -->
     <section id="visio-banni" class="alerte" hidden>
       <strong>Ton accès aux salles a été bloqué par un administrateur.</strong>
+    </section>
+
+    <!-- Prévenir avant d'entrer : les bloqueurs de pub coupent parfois la visio -->
+    <section id="avant-salle" class="avant-salle" hidden>
+      <h2>Avant de rejoindre</h2>
+      <p>Les bloqueurs de publicité (uBlock Origin, AdBlock…) peuvent couper la visio sans prévenir. Si la vidéo ne se lance pas, autorise <code id="domaine-visio">le serveur de visio</code> dans ton extension, puis rejoins la salle à nouveau.</p>
+      <p id="bloqueur-detecte" class="bloqueur-detecte" hidden>Un bloqueur de publicité semble actif sur cette page.</p>
+      <label class="case-bloqueur">
+        <input type="checkbox" id="accord-bloqueur" form="form-salle" required>
+        <span>Je comprends qu'une extension de mon navigateur peut bloquer la visioconférence.</span>
+      </label>
     </section>
 
     <form id="form-salle" class="toolbar" hidden>
@@ -158,5 +176,6 @@
   <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.15.16/dist/livekit-client.umd.min.js"></script>
   <script type="module" src="assets/js/visio.js"></script>
   <script type="module" src="assets/js/compte.js"></script>
+  <script type="module" src="assets/js/barre.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // Réglages du site à remplir par les admins. Rien de secret ici : ce fichier est public.
 
-// Adresse du serveur de visio auto-hébergé (PC de Sofian, voir docs/SERVEUR.md).
+// Adresse du serveur de visio auto-hébergé (voir docs/SERVEUR.md).
 // = https:// + DOMAINE choisi dans serveur/.env (ex : https://nsi-saint-sernin.duckdns.org).
 // Vide = visio indisponible sur le site en ligne (le reste fonctionne).
 export const URL_SERVEUR_VISIO = "https://nsi-saint-sernin.duckdns.org";

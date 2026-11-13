@@ -4,18 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connexion — NSI St Sernin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <a href="index.html" class="logo">NSI St Sernin</a>
-    <nav>
-      <a href="index.html">Accueil</a>
-      <a href="cours.html">Cours</a>
-      <a href="python.html">Python</a>
-      <a href="visio.html">Visio</a>
+  <header class="barre">
+    <nav class="espaces" aria-label="Espaces de travail">
+      <a href="index.html" class="ws ws-accueil" title="Accueil">nsi</a>
+      <a href="cours.html" class="ws" data-raccourci="1" title="Cours (Alt+1)"><b>1</b><span>cours</span></a>
+      <a href="visio.html" class="ws" data-raccourci="2" title="Salle de classe (Alt+2)"><b>2</b><span>classe</span></a>
+      <a href="python.html" class="ws" data-raccourci="3" title="Python (Alt+3)"><b>3</b><span>python</span></a>
+      <a href="admin.html" class="ws ws-admin" data-raccourci="4" title="Administration (Alt+4)" hidden><b>4</b><span>admin</span></a>
     </nav>
-    <div id="zone-compte" class="zone-compte"></div>
+    <span id="etat-serveur" class="etat-serveur" role="img" aria-label="État du serveur de visio"></span>
+    <div class="barre-droite">
+      <div id="zone-compte" class="zone-compte"></div>
+      <time id="horloge" class="pastille horloge"></time>
+    </div>
   </header>
 
   <main class="container etroit">
@@ -85,7 +92,7 @@
       <!-- Élève en attente de validation : le code à recopier -->
       <div id="bloc-attente" class="encart" hidden>
         <h3>Dernière étape : faire valider ton compte</h3>
-        <p>Recopie sur un papier ces deux informations et donne-le <strong>en main propre</strong> à Sofian E. ou Vianney M. :</p>
+        <p>Recopie sur un papier ces deux informations et donne-le <strong>en main propre</strong> à un administrateur :</p>
         <dl class="infos code-demande">
           <dt>Nom d'utilisateur</dt><dd id="attente-nom"></dd>
           <dt>Code</dt><dd id="attente-code" class="code-verif"></dd>
@@ -135,11 +142,10 @@
     </section>
   </main>
 
-  <footer class="footer">
-    Projet d'élèves — code source sur GitHub.
-  </footer>
+  <footer class="footer"><a href="https://github.com/dev-sofian/nsi-saint-sernin">code source sur GitHub</a></footer>
 
   <script type="module" src="assets/js/compte.js"></script>
   <script type="module" src="assets/js/connexion.js"></script>
+  <script type="module" src="assets/js/barre.js"></script>
 </body>
 </html>

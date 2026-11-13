@@ -14,6 +14,7 @@ import { PythonPartage, rafraichirEditeur } from "./python-partage.js";
 import { creerFenetre } from "./fenetre.js";
 import { appelerServeur, serveurConfigure } from "./serveur.js";
 import { bannirCompte } from "./moderation.js";
+import { urlServeurVisio } from "./site-config.js";
 import { Media } from "./visio-media.js";
 import { Panneau } from "./visio-panneau.js";
 
@@ -101,7 +102,48 @@ function montrerAccueil(c) {
   $("visio-banni").hidden = !(c && c.banni);
   form.hidden = dansSalle || !(c && c.membre);
   $("avert-serveur").hidden = form.hidden || serveurConfigure();
+  $("avant-salle").hidden = form.hidden;
   $("visio-identite").textContent = c && c.membre ? `Tu entres en tant que ${c.pseudo}.` : "";
+}
+
+// ---------- Bloqueurs de publicité ----------
+// On ne peut pas savoir à coup sûr si une extension bloque la visio : on prévient donc tout le
+// monde (case à cocher, mémorisée), on signale un bloqueur quand on en détecte un, et on
+// explique la cause probable si la connexion échoue alors que le serveur répond.
+
+const domaineVisio = (() => { try { return new URL(urlServeurVisio()).host; } catch (e) { return ""; } })();
+if (domaineVisio) $("domaine-visio").textContent = domaineVisio;
+
+const caseBloqueur = $("accord-bloqueur");
+try { caseBloqueur.checked = localStorage.getItem("nsi-accord-bloqueur") === "oui"; } catch (e) {}
+caseBloqueur.addEventListener("change", () => {
+  try { localStorage.setItem("nsi-accord-bloqueur", caseBloqueur.checked ? "oui" : "non"); } catch (e) {}
+});
+
+// Appât : un bloqueur de pub masque presque toujours un élément nommé comme une publicité.
+function detecterBloqueur() {
+  const appat = document.createElement("div");
+  appat.className = "adsbox ad-banner textads banner-ads pub_300x250";
+  appat.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:10px;height:10px;";
+  appat.textContent = "\u00a0";
+  document.body.append(appat);
+  setTimeout(() => {
+    const style = getComputedStyle(appat);
+    const masque = appat.offsetHeight === 0 || style.display === "none" || style.visibility === "hidden";
+    appat.remove();
+    $("bloqueur-detecte").hidden = !masque;
+  }, 400);
+}
+detecterBloqueur();
+
+// La connexion à la visio a échoué : le serveur répond-il ? Si oui, c'est presque sûrement une extension.
+async function serveurRepond() {
+  try {
+    const reponse = await fetch(`${urlServeurVisio()}/api/sante`, { cache: "no-store", signal: AbortSignal.timeout(5000) });
+    return reponse.ok;
+  } catch (e) {
+    return false;
+  }
 }
 
 ecouterCompte((c) => {
@@ -175,7 +217,12 @@ async function entrer(nom) {
   } catch (e) {
     console.error(e);
     $("etat-visio").textContent = "visio indisponible";
-    message(`${messageErreur(e)} Le tchat et le Python partagé fonctionnent quand même.`, true);
+    const connexionVisio = e && (e.name === "ConnectionError" || /signal|websocket/i.test(e.message || ""));
+    if (connexionVisio && await serveurRepond()) {
+      message(`La visio est bloquée par une extension de ton navigateur (bloqueur de pub ?). Autorise ${domaineVisio || "le serveur de visio"} dans l'extension, puis quitte et rejoins la salle. Le tchat et le Python partagé fonctionnent quand même.`, true);
+    } else {
+      message(`${messageErreur(e)} Le tchat et le Python partagé fonctionnent quand même.`, true);
+    }
   }
   majBoutons();
 }

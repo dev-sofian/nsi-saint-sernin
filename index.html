@@ -4,45 +4,86 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NSI St Sernin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <a href="index.html" class="logo">NSI St Sernin</a>
-    <nav>
-      <a href="index.html" class="active">Accueil</a>
-      <a href="cours.html">Cours</a>
-      <a href="python.html">Python</a>
-      <a href="visio.html">Visio</a>
+  <header class="barre">
+    <nav class="espaces" aria-label="Espaces de travail">
+      <a href="index.html" class="ws ws-accueil" title="Accueil">nsi</a>
+      <a href="cours.html" class="ws" data-raccourci="1" title="Cours (Alt+1)"><b>1</b><span>cours</span></a>
+      <a href="visio.html" class="ws" data-raccourci="2" title="Salle de classe (Alt+2)"><b>2</b><span>classe</span></a>
+      <a href="python.html" class="ws" data-raccourci="3" title="Python (Alt+3)"><b>3</b><span>python</span></a>
+      <a href="admin.html" class="ws ws-admin" data-raccourci="4" title="Administration (Alt+4)" hidden><b>4</b><span>admin</span></a>
     </nav>
-    <div id="zone-compte" class="zone-compte"></div>
+    <span id="etat-serveur" class="etat-serveur" role="img" aria-label="État du serveur de visio"></span>
+    <div class="barre-droite">
+      <div id="zone-compte" class="zone-compte"></div>
+      <time id="horloge" class="pastille horloge"></time>
+    </div>
   </header>
 
-  <main class="container">
-    <section class="hero">
-      <h1>Rattraper la NSI, ensemble</h1>
-      <p>Cours, éditeur Python et salle de classe virtuelle, au même endroit.</p>
+  <main class="bureau">
+    <h1 class="visuellement-cache">NSI St Sernin : rattraper la NSI ensemble</h1>
+
+    <section class="fenetre-tuile terminal" aria-label="Terminal d'accueil">
+      <div class="ff">
+        <pre class="ff-logo" aria-hidden="true">███╗   ██╗███████╗██╗
+████╗  ██║██╔════╝██║
+██╔██╗ ██║███████╗██║
+██║╚██╗██║╚════██║██║
+██║ ╚████║███████║██║
+╚═╝  ╚═══╝╚══════╝╚═╝</pre>
+        <div class="ff-infos">
+          <p class="ff-titre"><span id="ff-qui">invite</span><span class="hote">@nsi-saint-sernin</span></p>
+          <p class="ff-sep" aria-hidden="true">-----------------------------</p>
+          <dl class="ff-liste">
+            <dt>Compte</dt><dd id="ff-compte">anonyme</dd>
+            <dt>Cours</dt><dd id="ff-cours">…</dd>
+            <dt>Python</dt><dd>Pyodide 0.26, dans ton navigateur</dd>
+            <dt>Visio</dt><dd id="ff-visio">vérification…</dd>
+          </dl>
+          <div class="ff-palette" aria-hidden="true">
+            <span style="background:#11163a"></span><span style="background:#ef4444"></span><span style="background:#4ade80"></span><span style="background:#e3e32a"></span><span style="background:#3f6bff"></span><span style="background:#d03cff"></span><span style="background:#5b2ee6"></span><span style="background:#dfe3ff"></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="term-sortie" class="term-sortie" aria-live="polite"></div>
+      <form id="term-form" class="term-invite" autocomplete="off">
+        <label for="term-entree" class="invite"><span class="tilde">~</span> ❯❯❯</label>
+        <input type="text" id="term-entree" spellcheck="false" placeholder="tape « aide », ou « cours », « classe », « python »">
+      </form>
     </section>
 
-    <section class="cards">
-      <a class="card" href="cours.html">
-        <h2>📚 Cours</h2>
-        <p>Tous les chapitres de Première et Terminale, classés par thème.</p>
-      </a>
-      <a class="card" href="python.html">
-        <h2>🐍 Python</h2>
-        <p>Écrire, ouvrir et exécuter du code Python directement dans le navigateur.</p>
-      </a>
-      <a class="card" href="visio.html">
-        <h2>🎥 Visio</h2>
-        <p>Salle de classe avec Python partagé en direct, partage d'écran, tchat et main levée (compte validé).</p>
-      </a>
+    <section class="fenetre-tuile pluie" aria-hidden="true">
+      <canvas id="pluie"></canvas>
     </section>
+
+    <nav class="raccourcis" aria-label="Sections du site">
+      <a class="fenetre-tuile raccourci" href="cours.html">
+        <span class="raccourci-chemin">~/cours</span>
+        <h2><b>1</b>Cours</h2>
+        <p>Les chapitres de Terminale, avec des exemples à tester.</p>
+      </a>
+      <a class="fenetre-tuile raccourci" href="visio.html">
+        <span class="raccourci-chemin">~/classe</span>
+        <h2><b>2</b>Salle de classe</h2>
+        <p>Visio, Python partagé, partage d'écran, tchat et main levée. Compte validé requis.</p>
+      </a>
+      <a class="fenetre-tuile raccourci" href="python.html">
+        <span class="raccourci-chemin">~/python</span>
+        <h2><b>3</b>Python</h2>
+        <p>Écrire, ouvrir et exécuter du code Python, sans compte et sans rien installer.</p>
+      </a>
+    </nav>
   </main>
 
-  <footer class="footer">
-    Projet d'élèves — code source sur GitHub.
-  </footer>
+  <footer class="footer"><a href="https://github.com/dev-sofian/nsi-saint-sernin">code source sur GitHub</a></footer>
   <script type="module" src="assets/js/compte.js"></script>
+  <script type="module" src="assets/js/barre.js"></script>
+  <script type="module" src="assets/js/accueil.js"></script>
 </body>
 </html>

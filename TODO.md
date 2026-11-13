@@ -9,13 +9,11 @@ Architecture, accès et règles de sécurité : voir `README.md`.
 
 ## Prochaines étapes (dans l'ordre)
 
-1. 👤 Firebase : activer **Adresse e-mail/Mot de passe**, désactiver **Anonyme**, publier les nouvelles règles (`docs/FIREBASE.md`, étapes 3 et 5).
-2. 👤 Lancer les tests des règles sur un PC avec Java : `cd tests && npm install && npm test` (ils n'ont pas pu être lancés là où ils ont été écrits, faute d'accès réseau pour installer l'émulateur).
-3. 👤 Serveur : `docs/SERVEUR.md`, étapes 1 à 5 (Docker, ufw, DuckDNS, `initialiser.sh`, **mode démo**).
-4. 👤 Renseigner `URL_SERVEUR_VISIO` (et `LIEN_FORMULAIRE_ACCES`) dans `assets/js/site-config.js`.
-5. 👤 Ouvrir les 4 ports sur la Bbox, `sudo ./demarrer.sh`, vérifier depuis un téléphone en 4G (`docs/SERVEUR.md`, étapes 6 à 8).
-6. Test grandeur nature avec quelques élèves, puis avec la classe entière.
-7. Phase 4 : la nouvelle interface.
+1. ✔ Tests (jetons 20/20, règles 46/46), Firebase configuré, mode démo, mise en ligne, test réel en 4G (vidéo, son, écran, main levée, tchat).
+2. 👤 Tester la **demande d'écran à un élève** en vrai (élève sur ordinateur : les navigateurs de téléphone ne partagent pas l'écran).
+3. 👤 Créer le **formulaire Google** et mettre son lien dans `LIEN_FORMULAIRE_ACCES` (`assets/js/site-config.js`).
+4. 👤 Test avec 2 ou 3 élèves, puis avec la classe entière.
+5. Phase 4 : finir l'interface (voir plus bas).
 
 ---
 
@@ -62,7 +60,8 @@ Architecture, accès et règles de sécurité : voir `README.md`.
 - [x] Scripts `initialiser.sh` (génère les clés), `demarrer.sh` (refuse si ufw inactif ou `.env` incomplet), `demo.sh`, `arreter.sh` (interrupteur d'urgence).
 - [x] **Mode démo** pour présenter au prof et à la classe : tout sur le PC, rien d'ouvert.
 - [x] Guide pas à pas : `docs/SERVEUR.md`.
-- [ ] 👤 Étapes de `docs/SERVEUR.md` (voir « Prochaines étapes »).
+- [x] 👤 Étapes de `docs/SERVEUR.md` : Docker, ufw, DuckDNS, ports de la Bbox, certificat HTTPS, test depuis la 4G.
+- [x] Correctif : `demarrer.sh` donne `serveur/data/caddy*` à root (sinon Caddy ne pouvait pas enregistrer son certificat).
 - [ ] 👤 Enregistrer une courte vidéo d'un vrai cours pour la présentation en classe (le serveur en ligne ne peut pas tourner depuis le lycée : les ports sont ouverts sur la Bbox de la maison).
 - [ ] Optionnel : **CrowdSec** ou **fail2ban** sur les journaux de Caddy.
 - [ ] Optionnel : **TURN sur le port 443** pour les réseaux qui bloquent 7881/7882 (certains réseaux de lycée).
@@ -78,8 +77,9 @@ Architecture, accès et règles de sécurité : voir `README.md`.
 - [x] **Tchat** (Firebase) : 500 caractères max, texte brut, l'hôte supprime un message ou vide le tchat.
 - [x] **Main levée** : ordre d'arrivée, visible sur les vignettes et dans la liste, l'hôte peut baisser une main ; retirée automatiquement à la déconnexion.
 - [x] **Exclure** (hôte) et **Bannir** (admin) depuis la liste des participants ; banni = sorti immédiatement et plus aucun jeton.
-- [x] Testé dans Chromium avec Firebase et LiveKit simulés (inscription → validation → salle → écran demandé/accepté/refusé/arrêté → exclusion → ban → page Admin). **À tester pour de vrai** avec le serveur en ligne et plusieurs appareils.
-- [ ] **⚠ décision** : un élève peut-il **créer** une salle (il en devient l'hôte, ex : travail de groupe Pac-Man) ? Aujourd'hui : oui, le premier arrivé est hôte.
+- [x] Testé dans Chromium avec Firebase et LiveKit simulés (inscription → validation → salle → écran demandé/accepté/refusé/arrêté → exclusion → ban → page Admin), puis **en vrai** : PC + téléphone en 4G (vidéo, son, écran de l'hôte, main levée, tchat).
+- [x] **Décision (admins)** : un élève peut **créer** une salle et en devient l'hôte (travaux de groupe à distance, ex : Pac-Man).
+- [x] **Bloqueurs de publicité** (uBlock Origin a bloqué la visio pendant les tests) : encadré « Avant de rejoindre » avec une case obligatoire (mémorisée), détection d'un bloqueur par un élément-appât, et message précis si la visio échoue alors que le serveur répond.
 - [ ] Salle **verrouillée** par l'hôte / code de salle.
 - [ ] L'hôte peut **couper le micro** de quelqu'un (API LiveKit `MutePublishedTrack` via le service jetons).
 - [ ] Charger un exercice directement depuis les cours (bouton « Essayer ce code », phase 6).
@@ -105,21 +105,22 @@ EndeavourOS + **Sway / SwayFX** (gestionnaire de fenêtres en **mosaïque**, Way
 - **Panneau de droite** : pluie de caractères façon `cmatrix`, bleu et violet, quelques caractères en rose/magenta.
 - Palette approximative : fond `#0b0f24`, surface `#11163a` (~80 % d'opacité), bordure `#4b3cff`, violet actif `#5b2ee6`, bleu `#3f6bff`, magenta `#d03cff`, jaune `#e3e32a`, vert `#4ade80`, orange `#f59e0b`, rouge `#ef4444`, texte `#dfe3ff`.
 
-### Concept
+### Fait (thème « Abysses »)
 
-- [ ] Le site est un **gestionnaire de fenêtres en mosaïque** :
-  - espaces de travail = sections : `1` Cours · `2` Classe · `3` Python · `4` Admin (admins seulement) ;
-  - raccourcis façon Sway : `Alt+1…4` change d'espace, `Alt+flèches` change la fenêtre active (bordure en surbrillance) ;
-  - fenêtres côte à côte avec des espaces (« gaps »), sans barre de titre.
-- [ ] **Barre du haut** façon Waybar : espaces de travail à gauche ; cercle d'état au centre (vert-jaune = serveur de visio joignable, gris = anonyme, rouge = serveur éteint) ; pastilles à droite : salle, participants, micro, caméra, main levée, horloge, **⏻** = déconnexion.
-- [ ] **Accueil** = terminal avec un faux `fastfetch` du site : logo ASCII **original** « NSI » en dégradé violet → bleu, `Cours: 12`, `Salles ouvertes: 1`, `Utilisateur: anonyme`… + quelques commandes (`cours`, `classe`, `python`, `aide`, `connexion`).
-- [ ] **Classe** : vidéos, module actif (Python / écran) et tchat en mosaïque (la structure actuelle de `visio.html` s'y prête : scène + panneau latéral + fenêtre Python).
-- [ ] **Pluie de caractères** : canvas avec des mots-clés Python (`def`, `for`, `while`, `return`, `lambda`…), fenêtre décorative de l'accueil et écran de veille ; désactivée si `prefers-reduced-motion`.
-- [ ] Fond d'écran : **illustration originale** d'abysses bioluminescentes (SVG/canvas). Ne pas reprendre le fond d'écran réel ni le logo EndeavourOS (droits d'auteur, marque).
-- [ ] Police **Maple Mono** (licence OFL) hébergée dans `assets/fonts/` avec sa licence.
-- [ ] Icônes style Nerd Font / Waybar en SVG dans `assets/icons/` (faites maison ou sous licence libre, licence mentionnée).
-- [ ] Téléphone : un espace = une fenêtre plein écran, barre du haut compacte.
-- [ ] Accessibilité : contrastes suffisants malgré la transparence, navigation clavier, focus visible.
+- [x] **Barre façon Waybar** (`assets/js/barre.js`) : espaces de travail `nsi` `1` cours · `2` classe · `3` python · `4` admin (admins seulement), espace actif en violet plein ; **Alt+1…4** pour changer d'espace ; cercle d'état au centre (jaune-vert = serveur de visio en ligne, rouge = injoignable, gris = pas configuré, vérifié chaque minute) ; pastilles à droite : compte + rôle, **⏻** déconnexion, horloge.
+- [x] **Fenêtres** : coque translucide, angles droits, sans barre de titre, liseré fin qui s'allume sur la fenêtre où l'on travaille (comme la fenêtre active de Sway), espaces réguliers entre fenêtres.
+- [x] **Accueil** = terminal : faux `fastfetch` (logo ASCII « NSI » en dégradé violet → bleu, compte, nombre de cours, état de la visio, palette) + invite `~ ❯❯❯` avec des commandes (`aide`, `cours`, `classe`, `python`, `connexion`, `clear`, `whoami`).
+- [x] **Pluie de mots-clés Python** façon `cmatrix` (canvas, bleu/violet avec quelques gouttes magenta) ; image fixe si `prefers-reduced-motion`, masquée sur téléphone, en pause quand l'onglet est caché.
+- [x] **Fond d'écran original** : abysses avec méduses bioluminescentes (`assets/img/abysses.svg`, dessiné pour le projet).
+- [x] **Police** : Maple Mono si elle est installée sur l'ordinateur, sinon JetBrains Mono (Google Fonts) ; valeurs en italique comme dans le terminal.
+- [x] Téléphone : seulement les numéros des espaces, fenêtres empilées, sans défilement horizontal.
+
+### Reste à faire
+
+- [ ] Héberger **Maple Mono** (licence OFL) dans `assets/fonts/` avec sa licence, pour que tout le monde la voie (aujourd'hui : seulement ceux qui l'ont installée).
+- [ ] Vrai gestionnaire de fenêtres en mosaïque : `Alt+flèches` pour changer de fenêtre active, redimensionner les fenêtres de la salle.
+- [ ] Icônes style Nerd Font / Waybar en SVG dans `assets/icons/` (micro, caméra, écran, main…).
+- [ ] Thèmes secondaires optionnels (Nordic violet/rose, Manjaro rouge/noir) via `:root[data-theme=…]`.
 
 ---
 
@@ -135,7 +136,9 @@ EndeavourOS + **Sway / SwayFX** (gestionnaire de fenêtres en **mosaïque**, Way
 
 ## Phase 6 — Cours et finitions
 
-- [ ] Ajouter les vrais cours de Première et Terminale (avec l'accord du prof).
+- [x] **Décision (admins)** : seulement les cours de Terminale (exemples de Première retirés).
+- [ ] Ajouter les vrais cours de Terminale (avec l'accord du prof).
+- [x] **Décision (admins)** : les noms des admins n'apparaissent pas sur le site (accessible à tous).
 - [ ] Bouton « Essayer ce code » sur chaque bloc Python d'un cours.
 - [ ] Coloration syntaxique dans les cours.
 - [ ] Page « À propos » : but du projet, contacts des admins, règles de bonne conduite, données collectées et leur suppression.

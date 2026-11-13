@@ -1,6 +1,6 @@
 // Zone « compte » à droite de la barre du haut, présente sur toutes les pages.
-// Affiche « Se connecter » ou le pseudo + rôle + bouton de déconnexion
-// (+ lien « Admin » pour les administrateurs).
+// Affiche « se connecter » ou le pseudo + rôle + bouton ⏻ (déconnexion), et montre
+// l'espace de travail 4 « admin » aux administrateurs.
 // Prévient aussi la page avec l'événement "nsi:compte" (detail = compte ou null).
 
 import { ecouterCompte, seDeconnecter, firebaseConfigure, NOMS_ROLES } from "./auth.js";
@@ -19,14 +19,14 @@ function afficher(compte) {
   zone.replaceChildren();
 
   if (!compte) {
-    const lien = element("a", "btn", "Se connecter");
+    const lien = element("a", "pastille pastille-violette", "se connecter");
     const retour = location.pathname.split("/").pop() || "index.html";
     lien.href = retour === "connexion.html" ? "connexion.html" : `connexion.html?retour=${encodeURIComponent(retour)}`;
     zone.append(lien);
     return;
   }
 
-  const lienProfil = element("a", "compte-nom", compte.pseudo);
+  const lienProfil = element("a", "pastille compte-nom", compte.pseudo);
   lienProfil.href = "connexion.html";
   lienProfil.title = "Mon compte";
 
@@ -34,22 +34,22 @@ function afficher(compte) {
   if (compte.banni) badge = element("span", "badge badge-banni", "Banni");
   else if (!compte.membre) badge = element("span", "badge badge-attente", "En attente");
   else badge = element("span", `badge badge-${compte.role}`, NOMS_ROLES[compte.role]);
+  lienProfil.append(badge);
 
-  zone.append(lienProfil, badge);
-
-  if (compte.role === "admin") {
-    const admin = element("a", "btn", "Admin");
-    admin.href = "admin.html";
-    zone.append(admin);
-  }
-
-  const btn = element("button", "btn", "Déconnexion");
+  const btn = element("button", "pastille pastille-arret", "⏻");
   btn.type = "button";
+  btn.title = "Se déconnecter";
+  btn.setAttribute("aria-label", "Se déconnecter");
   btn.addEventListener("click", async () => {
     btn.disabled = true;
     try { await seDeconnecter(); } finally { btn.disabled = false; }
   });
-  zone.append(btn);
+  zone.append(lienProfil, btn);
+}
+
+function majEspaceAdmin(compte) {
+  const lien = document.querySelector(".espaces .ws-admin");
+  if (lien) lien.hidden = !(compte && compte.role === "admin");
 }
 
 if (firebaseConfigure && zone) {
@@ -58,5 +58,6 @@ if (firebaseConfigure && zone) {
 
 ecouterCompte((compte) => {
   if (firebaseConfigure) afficher(compte);
+  majEspaceAdmin(compte);
   document.dispatchEvent(new CustomEvent("nsi:compte", { detail: compte }));
 });

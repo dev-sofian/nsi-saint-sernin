@@ -361,7 +361,7 @@ export function messageErreur(e) {
     "PERMISSION_DENIED": "Action refusée : tu n'as pas les droits pour ça.",
     "non-connecte": "Tu dois être connecté.",
     "livekit-absent": "La bibliothèque de visio n'a pas pu être chargée (réseau du lycée ou bloqueur de publicité ?).",
-    "serveur-injoignable": "Le serveur de visio ne répond pas : il est peut-être éteint (il n'est allumé que pendant les cours).",
+    "serveur-injoignable": "Le serveur de visio ne répond pas : il est peut-être éteint (il n'est allumé que pendant les cours), ou bloqué par une extension de ton navigateur (bloqueur de pub).",
   };
   if (messages[code]) return messages[code];
   // Erreurs du serveur de visio : déjà rédigées en français.

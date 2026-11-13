@@ -11,7 +11,7 @@ async function chargerCatalogue() {
     const rep = await fetch("cours/index.json");
     catalogue = await rep.json();
     afficherListe("");
-    // Ouvre le cours indiqué dans l'adresse (ex : cours.html#premiere/01-types-de-base.md)
+    // Ouvre le cours indiqué dans l'adresse (ex : cours.html#terminale/01-recursivite.md)
     const depuisAdresse = decodeURIComponent(location.hash.slice(1));
     if (depuisAdresse) ouvrirCours(depuisAdresse);
   } catch (e) {
