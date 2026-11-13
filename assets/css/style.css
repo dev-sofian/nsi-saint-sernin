@@ -287,10 +287,61 @@ input[type="checkbox"] { accent-color: var(--violet); width: 1.05em; height: 1.0
 .sidebar { padding: 14px; position: sticky; top: 70px; max-height: calc(100vh - 90px); overflow-y: auto; }
 .sidebar input { width: 100%; margin-bottom: 10px; }
 .sidebar h3 { font-size: .9rem; color: var(--pale); font-style: italic; font-weight: 400; margin: 14px 0 4px; }
-.sidebar ul { list-style: none; padding: 0; margin: 0; }
-.sidebar li a { display: block; padding: 4px 8px; text-decoration: none; color: var(--texte); }
-.sidebar li a:hover { background: var(--coque-claire); }
-.sidebar li a.active { background: var(--violet); color: #fff; }
+.sidebar ul { list-style: none; padding: 0; margin: 0 0 4px; }
+.sidebar a { text-decoration: none; color: var(--texte); }
+.sidebar li a { display: block; padding: 3px 8px 3px 22px; font-size: .9rem; }
+.sidebar a:hover { background: var(--coque-claire); color: #fff; }
+.sidebar a.active { background: var(--violet); color: #fff; }
+.sidebar .ext { color: var(--pale); font-size: .75rem; font-style: italic; white-space: nowrap; }
+.sidebar a.active .ext { color: #d9d0ff; }
+/* Un chapitre = un dossier qu'on déplie, comme dans un gestionnaire de fichiers */
+.chapitre summary { display: flex; align-items: baseline; gap: 6px; padding: 3px 0; cursor: pointer; list-style: none; }
+.chapitre summary::-webkit-details-marker { display: none; }
+.chapitre summary::before { content: "▸"; color: var(--magenta); width: 1ch; flex: none; }
+.chapitre[open] summary::before { content: "▾"; }
+.chapitre summary a { flex: 1; padding: 1px 6px; font-weight: 700; }
+.chapitre .partie { margin: 6px 0 2px 22px; color: var(--jaune); font-size: .8rem; font-style: italic; }
+.chapitre .partie.muted { color: var(--pale); }
+
+/* Document ouvert */
+.entete-doc { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 12px; margin-bottom: 18px; border-bottom: 1px solid var(--lisere-doux); }
+.contenu > .entete-doc { max-width: none; }
+.fil { margin: 0; color: var(--pale); font-size: .85rem; font-style: italic; }
+.fil a { color: var(--pale); }
+.fil a:hover { color: #fff; }
+.actions-doc { display: flex; flex-wrap: wrap; gap: 6px; }
+.docs-chapitre { list-style: "· "; padding-left: 1.2em; }
+.docs-chapitre .ext { color: var(--pale); font-size: .8rem; font-style: italic; }
+.pdf { width: 100%; height: 80vh; border: 1px solid var(--lisere-doux); }
+.contenu > div { max-width: 92ch; }
+.contenu img { max-width: 100%; height: auto; }
+.image-absente { color: var(--pale); font-style: italic; }
+.contenu details { margin: 10px 0; padding: 6px 12px; border: 1px dashed var(--lisere-doux); }
+.contenu summary { cursor: pointer; color: #a9bcff; }
+.contenu .katex { font-size: 1.05em; }
+
+/* Cellules de notebook */
+.cellule { margin: 0 0 14px; }
+.cellule-md > :first-child { margin-top: 0; }
+.cellule-md > :last-child { margin-bottom: 0; }
+.bloc-code { position: relative; margin: 12px 0; }
+.bloc-code pre { margin: 0; }
+.cellule-code .bloc-code { margin: 0; }
+.actions-code { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+.zone-reponse { padding: 8px 12px; border: 1px dashed var(--lisere-doux); color: var(--pale); font-size: .85rem; font-style: italic; }
+.sorties { border-left: 2px solid var(--jaune); margin-top: 4px; }
+.sortie { margin: 0; padding: 6px 14px; background: transparent; color: var(--texte); white-space: pre-wrap; border: 0; }
+.sortie.err { color: #ff8f8f; }
+.sortie-html { padding: 6px 14px; overflow-x: auto; }
+.contenu .sortie { border-left: 0; }
+
+/* Coloration Python (mêmes teintes que le rice) */
+.py-mot { color: #f0a6ff; }
+.py-def { color: #fff; font-weight: 700; }
+.py-fonction { color: #a9bcff; }
+.py-chaine { color: #e9e98a; }
+.py-nombre { color: #7fc4ff; }
+.py-com { color: var(--pale); font-style: italic; }
 .contenu { padding: 24px 30px; line-height: 1.7; }
 .contenu > * { max-width: 76ch; }
 .contenu h1 { color: #fff; }

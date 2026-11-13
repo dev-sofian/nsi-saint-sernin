@@ -46,7 +46,7 @@ nsi-saint-sernin/
 ├── TODO.md              Feuille de route et décisions
 ├── CLAUDE.md            Consignes courtes pour Claude
 ├── index.html           Accueil
-├── cours.html           Liste + lecture des cours en Markdown
+├── cours.html           Chapitres + lecture des cours (notebooks .ipynb, Markdown, PDF, liens)
 ├── python.html          Python solo (local, sans compte)
 ├── visio.html           Salle de classe : visio + Python partagé + écran + tchat + main levée
 ├── connexion.html       Connexion / création de compte / code de validation / mon compte
@@ -75,7 +75,8 @@ nsi-saint-sernin/
 │       ├── executeur.js / python-worker.js  Pyodide dans un Web Worker (arrêt possible, 20 s max)
 │       ├── fenetre.js      Fenêtre flottante réutilisable
 │       ├── cours.js / python.js  Pages Cours et Python solo
-├── cours/               Cours en Markdown + index.json
+│       ├── notebook.js     Affichage des .ipynb et du Markdown (nettoyé), coloration Python, « Essayer »
+├── cours/               index.json + terminale/<chapitre>/ (notebooks, .md, PDF, fichiers annexes)
 ├── docs/
 │   ├── FIREBASE.md      Mise en place Firebase (admins)
 │   └── SERVEUR.md       Héberger le serveur de visio (Sofian)
@@ -117,7 +118,9 @@ nsi-saint-sernin/
 | CodeMirror | 5.65.16 (cdnjs) | Éditeur de code |
 | Pyodide | 0.26.4 (jsdelivr) | Python dans le navigateur |
 | diff-match-patch | 20121119 (cdnjs) | Fusion des modifications du code partagé |
-| marked | (jsdelivr) | Rendu Markdown des cours |
+| marked | 15.0.12 (jsdelivr) | Rendu Markdown des cours |
+| DOMPurify | 3.4.14 (jsdelivr) | Nettoyage du HTML des cours (aucun script ne passe) |
+| KaTeX | 0.16.47 (jsdelivr, chargé seulement s'il y a des formules) | Maths `$…$` des notebooks |
 
 Côté serveur (Docker, versions épinglées) : `livekit/livekit-server:v1.13.11`, `caddy:2.10.2-alpine`,
 `node:22.23-alpine`, `curlimages/curl:8.11.1`.
@@ -145,11 +148,28 @@ GitHub → **Settings → Pages → Branch : main / (root)**. Après un changeme
 
 ## Ajouter un cours
 
-1. Écrire le cours en Markdown dans `cours/terminale/` (nom : `NN-titre-en-minuscules.md`).
-2. Ajouter l'entrée dans `cours/index.json` :
+Un **chapitre** (POO, Récursivité…) contient des **parties** (Cours, Exercices, Bac…), qui contiennent
+des **documents**. Tout est décrit dans `cours/index.json`.
+
+1. Déposer les fichiers dans `cours/terminale/<chapitre>/`, avec des noms simples
+   (minuscules, tirets, sans accents ni espaces) : `cours/terminale/poo/exercices-poo.ipynb`.
+2. Ajouter le document dans la bonne partie du chapitre :
    ```json
-   { "titre": "Mon chapitre", "theme": "Données", "fichier": "terminale/02-mon-chapitre.md" }
+   { "id": "exercices", "titre": "Exercices POO", "type": "notebook", "fichier": "terminale/poo/exercices-poo.ipynb" }
    ```
+   - `id` : court et unique dans le chapitre, il donne l'adresse `cours.html#poo/exercices`.
+   - `type` : `notebook` (.ipynb), `markdown` (.md), `pdf`, `fichier` (à télécharger) ou `lien`
+     (site externe : mettre `"url"` à la place de `"fichier"`, pas d'`id`).
+   - `annexes` (facultatif) : fichiers dont le notebook a besoin, par exemple un CSV.
+     Ils sont proposés au téléchargement et chargés automatiquement dans Basthon.
+3. Nouveau chapitre : copier un bloc existant (`id`, `titre`, `theme`, `parties`).
+   Un chapitre sans document (`"parties": []`) s'affiche comme « bientôt ».
+4. Vérifier avec Live Server : le notebook s'affiche, « Ouvrir dans Basthon » ne marche qu'une
+   fois en ligne (Basthon doit pouvoir télécharger le fichier).
+
+Les notebooks sont affichés tels quels (cellules, sorties, images collées, formules). Le HTML
+qu'ils contiennent est nettoyé (pas de `<script>`, `<style>` ni `on…=`) et les textes illisibles
+sur fond sombre sont recolorés automatiquement.
 
 ## Conventions de code
 
