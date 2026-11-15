@@ -5,6 +5,16 @@ Python partagé en direct, partage d'écran sur demande, tchat et main levée.
 
 ---
 
+## Images
+
+![description](MenuPrincipal.png)
+![description](Cours.png)
+![description](Python.png)
+![description](Classe.png)
+![description](Visio.png)
+
+---
+
 ## Architecture
 
 Le site est en **deux parties** :
